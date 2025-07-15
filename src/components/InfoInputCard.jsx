@@ -1,5 +1,4 @@
 export default function InfoInputCard({ style, setStyle, age, setAge, gender, setGender }) {
-    // img 속성이 완전히 제거된 배열입니다.
     const styles = [
       { value: 'realistic', label: '실사' },
       { value: '2d', label: '2D 애니메이션' },
@@ -12,7 +11,6 @@ export default function InfoInputCard({ style, setStyle, age, setAge, gender, se
       <div className="bg-[#08091d]/60 backdrop-blur-md rounded-2xl p-6 shadow border border-[#30363d] flex flex-col justify-center">
         <h2 className="text-lg font-semibold mb-6">정보 입력</h2>
   
-        {/* 1. 화풍 선택 - 이미지 미리보기 관련 코드가 모두 삭제되었습니다. */}
         <div className="mb-4">
           <select
             value={style}

@@ -14,31 +14,38 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 load_dotenv()
 
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 router = APIRouter()
 BFL_API_KEY = os.getenv("BFL_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 BFL_ENDPOINT = "https://api.bfl.ai/v1/flux-kontext-pro"
 
 
 STYLE_KO_TO_EN = {
-    "실사": "ultra-realistic portrait with soft lighting, smooth skin texture, cinematic depth of field, beautified",
-    "2D 애니메이션": "studio-quality 2D anime style, cel shading, high contrast, expressive eyes, vibrant colors",
-    "3D 애니메이션": "high-end 3D rendering in Pixar style, soft shadows, glossy materials, warm lighting",
-    "사이버펑크": "cyberpunk style with neon lights, dark cityscape background, glowing elements, reflective surfaces, futuristic atmosphere",
-    "도트그래픽": "8-bit pixel art style, retro game aesthetic, limited color palette, low resolution, nostalgic mood"
+    "realistic": "ultra-realistic portrait with soft lighting, smooth skin texture, cinematic depth of field, beautified",
+    "2D": "studio-quality 2D anime style, cel shading, high contrast, expressive eyes, vibrant colors",
+    "3D": "high-end 3D rendering in Pixar style, soft shadows, glossy materials, warm lighting",
+    "cyberpunk": "cyberpunk style with neon lights, dark cityscape background, glowing elements, reflective surfaces, futuristic atmosphere",
+    "dot": "8-bit pixel art style, retro game aesthetic, limited color palette, low resolution, nostalgic mood"
 }
 
 GENDER_KO_TO_EN = {
-    "남성": "male",
-    "여성": "female",
-    "기타": "neutral"
+    "male": "male",
+    "female": "female",
+    "other": "neutral"
 }
 
-AGE_CHOICES = ["5", "15", "25", "35", "45", "55", "75"]
-
+AGE_MAP = {
+    "9": "5",
+    "10": "15",
+    "20": "25",
+    "30": "35",
+    "40": "45",
+    "50": "55",
+    "60": "75"  
+}
 
 @router.post("/translate")
 async def translate_text(text: str = Form(...)) -> JSONResponse:
@@ -87,8 +94,11 @@ async def generate_image(
     else:
         gender = choice(list(GENDER_KO_TO_EN.values()))
 
-    if not age:
-        age = choice(AGE_CHOICES)
+    final_age = ""
+    if age and age in AGE_MAP:
+        final_age = AGE_MAP[age]
+    else:
+        final_age = choice(list(AGE_MAP.values()))
 
     try:
         response = openai.ChatCompletion.create(
@@ -104,7 +114,7 @@ async def generate_image(
         logging.info(f"✅ 번역된 텍스트: {translated}")
 
         composed_prompt = (
-            f"{translated}, portrayed as a {age}-year-old {gender}, "
+            f"{translated}, portrayed as a {final_age}-year-old {gender}, "
             f"shot in candid paparazzi style with a 100mm lens, 720p, 3:4 aspect ratio, "
             f"in {style} style, seen from a third-person perspective with subtle embellishment."
             "Overall cute creation."
@@ -112,9 +122,13 @@ async def generate_image(
 
         logging.info(f"🐾 최종 프롬프트 : {composed_prompt}")
 
-        payload = {"prompt": composed_prompt, "aspect_ratio": "3:4"}
+        payload = {
+            "prompt": composed_prompt, 
+            "aspect_ratio": "3:4",
+            }
 
         if image:
+            logging.info(f"📸 이미지 수신 완료: {image.filename}, 사이즈: {image.size}")
             image_bytes = await image.read()
             encoded_image = base64.b64encode(image_bytes).decode("utf-8")
             payload["image"] = f"data:image/png;base64,{encoded_image}"
@@ -172,9 +186,6 @@ async def generate_image(
         return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
 
     
-    
-
-
 @router.get("/generated_image")
 def proxy_image(url: str) -> StreamingResponse:
     try:
