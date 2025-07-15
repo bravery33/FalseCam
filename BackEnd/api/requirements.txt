@@ -1,0 +1,9 @@
+replicate
+python-dotenv
+google-generativeai
+requests
+fastapi
+uvicorn
+python-dotenv
+openai
+python-multipart

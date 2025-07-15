@@ -1,1 +1,6 @@
+# 폴더
 /node_modules
+__pycache__/
+
+#파일
+.env
