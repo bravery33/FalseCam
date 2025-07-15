@@ -20,6 +20,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 router = APIRouter()
 BFL_API_KEY = os.getenv("BFL_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 BFL_ENDPOINT = "https://api.bfl.ai/v1/flux-kontext-pro"
 
 

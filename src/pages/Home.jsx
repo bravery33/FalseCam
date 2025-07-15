@@ -61,13 +61,40 @@ export default function Home() {
   };
 
   // "오늘 하루 소환!" 버튼 클릭 시 실행될 함수
-  const handleGenerate = () => {
-    setIsSummoning(true); // 로딩 시작
-    setTimeout(() => {
-      // 여기에 실제 이미지 생성 API 호출 로직을 구현합니다.
-      setIsSummoning(false); // 로딩 완료
-    }, 3000); // 3초 동안 로딩 시뮬레이션
-  };
+ const handleGenerate = async () => {
+  setIsSummoning(true);
+  
+  try {
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('style', style);
+    formData.append('age', age);
+    formData.append('gender', gender);
+    
+    if (file) {
+      formData.append('image', file);
+    }
+
+    const response = await fetch('http://127.0.0.1:8000/generate/image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      // 생성된 이미지를 imageList에 추가
+      setImageList(prev => [result.image, ...prev]);
+      console.log('이미지 생성 성공!', result.image);
+    } else {
+      console.error('이미지 생성 실패:', result.error);
+    }
+  } catch (error) {
+    console.error('API 호출 실패:', error);
+  } finally {
+    setIsSummoning(false);
+  }
+};
 
   return (
     <div
