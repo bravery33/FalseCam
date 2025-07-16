@@ -2,6 +2,7 @@ import asyncio
 import base64
 import logging
 import os
+import re
 from io import BytesIO
 from random import choice
 from typing import Optional
@@ -12,64 +13,77 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Form, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
+
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 router = APIRouter()
 BFL_API_KEY = os.getenv("BFL_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 BFL_ENDPOINT = "https://api.bfl.ai/v1/flux-kontext-pro"
 
 
-STYLE_KO_TO_EN = {
-    "realistic": "ultra-realistic portrait with soft lighting, smooth skin texture, cinematic depth of field, beautified",
-    "2D": "studio-quality 2D anime style, cel shading, high contrast, expressive eyes, vibrant colors",
-    "3D": "high-end 3D rendering in Pixar style, soft shadows, glossy materials, warm lighting",
-    "cyberpunk": "cyberpunk style with neon lights, dark cityscape background, glowing elements, reflective surfaces, futuristic atmosphere",
-    "dot": "8-bit pixel art style, retro game aesthetic, limited color palette, low resolution, nostalgic mood"
+STYLE_PROMPT = {
+    "realistic": "hyper-detailed, sharp focus, DSLR photo, documentary style, 100mm lens, soft natural lighting",
+    "2D": "vibrant colors, expressive eyes, clean line art, cel shading, anime screencap, flat design aesthetic",
+    "3D": "pixar-like animation style, smooth surfaces, subsurface scattering, warm and inviting lighting, cute 3D character",
+    "cyberpunk": "neon-soaked cityscape, dramatic backlighting, holographic elements, reflective surfaces, futuristic sci-fi fantasy",
+    "dot": "8-bit pixel art character, full body, retro gaming style, low resolution"
 }
+
 
 GENDER_KO_TO_EN = {
     "male": "male",
     "female": "female",
-    "other": "neutral"
+    "other": "gender-neutral"
 }
+
 
 AGE_MAP = {
-    "9": "5",
-    "10": "15",
-    "20": "25",
-    "30": "35",
-    "40": "45",
-    "50": "55",
-    "60": "75"  
+    "9": "5-year-old",
+    "10": "15-year-old",
+    "20": "25-year-old",
+    "30": "35-year-old",
+    "40": "45-year-old",
+    "50": "55-year-old",
+    "60": "75-year-old"
 }
 
-@router.post("/translate")
-async def translate_text(text: str = Form(...)) -> JSONResponse:
-    if not OPENAI_API_KEY:
-        logging.error("❌ OPENAI_API_KEY가 설정되지 않았습니다❌")
-        return JSONResponse(status_code=500, content={"success": False, "error": "API key missing."})
+
+def contains_korean(text: str) -> bool:
+    return bool(re.search("[가-힣]", text))
+
+
+async def get_translated_text(text: str) -> str:
+    if not OPENAI_API_KEY or not contains_korean(text):
+        return text
+
+    messages = [
+        {"role": "system",
+         "content": "Translate the following Korean text to natural English for an image generation prompt."},
+        {"role": "user", "content": text}
+    ]
 
     try:
-        response = openai.ChatCompletion.create(
+        response = await asyncio.to_thread(
+            openai.ChatCompletion.create,
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Translate the following Korean text to English."},
-                {"role": "user", "content": text}
-            ],
+            messages=messages,
             temperature=0.3,
-            max_tokens=100
+            max_tokens=100,
+            request_timeout=15
         )
-        translated = response.choices[0].message.content.strip()
-        logging.info(f"✅ 번역 결과: {translated}")
-        return JSONResponse(content={"success": True, "translated": translated})
-
+        return response.choices[0].message.content.strip()
     except Exception as e:
         logging.error(f"❌ 번역 실패: {str(e)}")
-        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+        return text
 
 
 @router.post("/generate/image")
@@ -80,59 +94,66 @@ async def generate_image(
     gender: str = Form(""),
     image: Optional[UploadFile] = None
 ) -> JSONResponse:
-    if not BFL_API_KEY or not OPENAI_API_KEY:
-        logging.error("❌ API Key가 설정되지 않았습니다❌")
-        return JSONResponse(status_code=500, content={"success": False, "error": "API key missing."})
-    
-    if style and style in STYLE_KO_TO_EN:
-        style = STYLE_KO_TO_EN[style]
-    else:
-        style = choice(list(STYLE_KO_TO_EN.values()))
 
-    if gender and gender in GENDER_KO_TO_EN:
-        gender = GENDER_KO_TO_EN[gender]
-    else:
-        gender = choice(list(GENDER_KO_TO_EN.values()))
+    if not BFL_API_KEY:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "API key missing."}
+        )
 
-    final_age = ""
-    if age and age in AGE_MAP:
-        final_age = AGE_MAP[age]
+    translated_prompt: str = await get_translated_text(text)
+    style_prompt: str = STYLE_PROMPT.get(style) or choice(list(STYLE_PROMPT.values()))
+    gender_en: str = GENDER_KO_TO_EN.get(gender) or choice(list(GENDER_KO_TO_EN.values()))
+    final_age: str = AGE_MAP.get(age) or choice(list(AGE_MAP.values()))
+    paparazzi_prompt: str = (
+        "full-body shot, candid, not looking at the camera, "
+        "like a paparazzi photo, natural moment"
+    )
+    ethnicity_keyword: str = "Korean" if contains_korean(text) else ""
+
+    if style == "dot" and not image:
+        subject_prompt = f"A {final_age} {ethnicity_keyword} {gender_en} {translated_prompt}"
+        style_prompt = STYLE_PROMPT["dot"]
+        final_prompt_parts = [
+            style_prompt,
+            subject_prompt
+        ]
+    elif image:
+        subject_prompt = f"photo of a {final_age} {ethnicity_keyword} {gender_en}"
+        face_guidance_prompt = (
+            "The face in the generated image must be a very close and exact match to the reference photo."
+        )
+        final_prompt_parts = [
+            style_prompt,
+            subject_prompt,
+            translated_prompt,
+            face_guidance_prompt,
+            paparazzi_prompt
+        ]
     else:
-        final_age = choice(list(AGE_MAP.values()))
+        subject_prompt = f"A {final_age} {ethnicity_keyword} {gender_en}"
+        final_prompt_parts = [
+            style_prompt,
+            translated_prompt,
+            subject_prompt,
+            paparazzi_prompt
+        ]
+
+    composed_prompt: str = ", ".join(filter(None, final_prompt_parts))
+    logging.info(f"🐾 최종 프롬프트: {composed_prompt}")
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Translate the following Korean text to English."},
-                {"role": "user", "content": text}
-            ],
-            temperature=0.3,
-            max_tokens=100
-        )
-        translated = response.choices[0].message.content.strip()
-        logging.info(f"✅ 번역된 텍스트: {translated}")
-
-        composed_prompt = (
-            f"{translated}, portrayed as a {final_age}-year-old {gender}, "
-            f"shot in candid paparazzi style with a 100mm lens, 720p, 3:4 aspect ratio, "
-            f"in {style} style, seen from a third-person perspective with subtle embellishment."
-            "Overall cute creation."
-        )
-
-        logging.info(f"🐾 최종 프롬프트 : {composed_prompt}")
-
         payload = {
-            "prompt": composed_prompt, 
-            "aspect_ratio": "3:4",
-            }
-
+            "prompt": composed_prompt,
+            "guidance_scale": 4,
+            "num_images": 1,
+            "output_format": "png",
+            "aspect_ratio": "3:4"
+        }
         if image:
-            logging.info(f"📸 이미지 수신 완료: {image.filename}, 사이즈: {image.size}")
             image_bytes = await image.read()
             encoded_image = base64.b64encode(image_bytes).decode("utf-8")
             payload["image"] = f"data:image/png;base64,{encoded_image}"
-            logging.info("📸 이미지 업로드 및 base64 인코딩 완료")
 
         headers = {
             "accept": "application/json",
@@ -140,59 +161,83 @@ async def generate_image(
             "Content-Type": "application/json"
         }
 
-        response = requests.post(BFL_ENDPOINT, headers=headers, json=payload)
+        response = requests.post(
+            BFL_ENDPOINT,
+            headers=headers,
+            json=payload,
+            timeout=20
+        )
         response.raise_for_status()
         data = response.json()
         polling_url = data.get("polling_url")
         request_id = data.get("id")
 
         if not polling_url or not request_id:
-            logging.error("⚠️ BFL에서 polling_url 또는 request_id를 받지 못함.")
-            return JSONResponse(status_code=500, content={"success": False, "error": "Invalid response from BFL."})
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": "Invalid response from BFL API."}
+            )
 
-        logging.info("💫 이미지 생성 상태 확인을 위해 polling 시작")
-
-        for _ in range(20):
-            await asyncio.sleep(1)
+        for _ in range(30):
+            await asyncio.sleep(1.5)
             poll = requests.get(
                 polling_url,
                 headers={"accept": "application/json", "x-key": BFL_API_KEY},
-                params={"id": request_id}
+                params={"id": request_id},
+                timeout=10
             )
             poll.raise_for_status()
             result = poll.json()
 
             if result.get("status") == "Ready":
                 image_url = result["result"]["sample"]
-                logging.info(f"✅ 이미지 생성 완료. URL : {image_url}")
-                image_response = requests.get(image_url)
+                image_response = requests.get(image_url, timeout=15)
                 image_response.raise_for_status()
                 encoded_image = base64.b64encode(image_response.content).decode("utf-8")
-                data_uri = f"data:image/png;base64,{encoded_image}"
-
+                
+                output_format = payload.get("output_format", "png")
+                data_uri = f"data:image/{output_format};base64,{encoded_image}"
+                logging.info(f"API로 보낼 payload: {payload}")
+                return JSONResponse(content={"success": True, "image": data_uri})
+            elif result.get("status") in ["Error", "Failed"]:
+                logging.error(f"❌ 이미지 생성 실패 또는 오류 발생: {result}")
                 return JSONResponse(
-                    content={"success": True, "image": data_uri}
+                    status_code=500,
+                    content={"success": False, "error": "Image generation failed."}
                 )
 
-            elif result.get("status") in ["Error", "Failed"]:
-                logging.error("❌ 이미지 생성 실패 또는 오류 발생")
-                break
-
         logging.warning("⌛ 이미지 생성 polling 시간 초과")
-        return JSONResponse(status_code=504, content={"success": False, "error": "Timeout."})
+        return JSONResponse(
+            status_code=504,
+            content={"success": False, "error": "Timeout."}
+        )
 
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"❌ BFL API HTTP 오류 발생: {e.response.text}")
+        return JSONResponse(
+            status_code=e.response.status_code,
+            content={"success": False, "error": e.response.text}
+        )
     except Exception as e:
         logging.error(f"❌ 처리 중 예외 발생: {e}")
-        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
 
-    
-@router.get("/generated_image")
+
+@router.get("/generated_image_proxy")
 def proxy_image(url: str) -> StreamingResponse:
     try:
-        logging.info(f"📥 이미지 프록시 요청 : {url}")
-        response = requests.get(url)
-        return StreamingResponse(BytesIO(response.content), media_type="image/jpeg")
-
-    except Exception:
-        logging.error("❌ 프록시 이미지 요청 실패")
-        return JSONResponse(status_code=404, content={"success": False, "Error": "Image not found😲."})
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        return StreamingResponse(
+            BytesIO(response.content),
+            media_type=response.headers["Content-Type"]
+        )
+    except Exception as e:
+        logging.error(f"❌ 프록시 이미지 요청 실패: {e}")
+        return JSONResponse(
+            status_code=404,
+            content={"success": False, "error": "Image not found."}
+        )
