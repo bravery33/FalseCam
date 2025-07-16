@@ -24,7 +24,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isSummoning, setIsSummoning] = useState(false);
-  const [imageUrl, setImageUrl] = useState(''); 
+  const [imageUrl, setImageUrl] = useState('');
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
@@ -63,49 +63,49 @@ export default function Home() {
   };
 
   // "오늘 하루 소환!" 버튼 클릭 시 실행될 함수
- const handleGenerate = async () => {
-  setIsSummoning(true);
-  
-  try {
-    const formData = new FormData();
-    formData.append('text', text);
-    formData.append('style', style);
-    formData.append('age', age);
-    formData.append('gender', gender);
-    
-    if (file) {
-      formData.append('image', file);
-    }
+  const handleGenerate = async () => {
+    setIsSummoning(true);
 
-    const response = await fetch('http://127.0.0.1:8000/generate/image', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('style', style);
+      formData.append('age', age);
+      formData.append('gender', gender);
 
-    const result = await response.json();
-    if (result.success && result.image) {
-      setImageList((prev) => [
-        {
-          src: result.image.startsWith('http') ? result.image : `/${result.image}`,
-          type: 'image',
-        },
-        ...prev,
-      ]);
+      if (file) {
+        formData.append('image', file);
+      }
+
+      const response = await fetch('http://127.0.0.1:8000/generate/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.success && result.image) {
+        setImageList((prev) => [
+          {
+            src: result.image,
+            type: 'image',
+          },
+          ...prev,
+        ]);
+      }
+
+
+      if (result.success) {
+        setImageList(prev => [{ src: result.image, type: 'image' }, ...prev]);
+        console.log('이미지 생성 성공!', result.image);
+      } else {
+        console.error('이미지 생성 실패:', result.error);
+      }
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+    } finally {
+      setIsSummoning(false);
     }
-    
-    
-    if (result.success) {
-      setImageList(prev => [{ src: `/${result.image}`, type: 'image' }, ...prev]);
-      console.log('이미지 생성 성공!', result.image);
-    } else {
-      console.error('이미지 생성 실패:', result.error);
-    }
-  } catch (error) {
-    console.error('API 호출 실패:', error);
-  } finally {
-    setIsSummoning(false);
-  }
-};
+  };
 
   return (
     <div
