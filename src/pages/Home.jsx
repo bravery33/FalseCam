@@ -77,7 +77,7 @@ export default function Home() {
         formData.append('image', file);
       }
 
-      const response = await fetch('http://127.0.0.1:8000/generate/image', {
+      const response = await fetch('https://falsecam.onrender.com/generate/image', {
         method: 'POST',
         body: formData,
       });
