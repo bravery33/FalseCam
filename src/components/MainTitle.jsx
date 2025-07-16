@@ -5,7 +5,7 @@ export default function MainTitle() {
           <br />
           <span className="text-white">더 특별한</span>
           <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#304eb1] to-[#a8cfff]">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff4d8b] to-[#a8cfff]">
             당신의
           </span>
           <span className="text-white"> 하루</span>

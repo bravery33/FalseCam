@@ -1,58 +1,121 @@
+import Select from 'react-select';
+
 export default function InfoInputCard({ style, setStyle, age, setAge, gender, setGender }) {
-    const styles = [
-      { value: 'realistic', label: '실사' },
-      { value: '2d', label: '2D 애니메이션' },
-      { value: '3d', label: '3D 애니메이션' },
-      { value: 'cyberpunk', label: '사이버펑크' },
-      { value: 'dot', label: '도트그래픽' },
-    ];
-  
-    return (
-      <div className="bg-[#08091d]/60 backdrop-blur-md rounded-2xl p-6 shadow border border-[#30363d] flex flex-col justify-center">
-        <h2 className="text-lg font-semibold mb-6">정보 입력</h2>
-  
-        <div className="mb-4">
-          <select
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
-            className="w-full p-3 bg-[#08091d] border border-[#30363d] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="" disabled hidden>오늘 하루를 그려볼까요?</option>
-            <option value="random">선택안함 (랜덤)</option>
-            {styles.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-        </div>
-  
-        {/* 2. 나이 선택 */}
-        <select
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-          className="mb-4 p-3 w-full bg-[#08091d] border border-[#30363d] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="" disabled hidden>몇 살이길 원해요?</option>
-          <option value="random">선택안함 (랜덤)</option>
-          <option value="9">9세 이하</option>
-          <option value="10">10대</option>
-          <option value="20">20대</option>
-          <option value="30">30대</option>
-          <option value="40">40대</option>
-          <option value="50">50대</option>
-          <option value="60">60대 이상</option>
-        </select>
-  
-        {/* 3. 성별 선택 */}
-        <select
-          value={gender}
-          onChange={(e) => setGender(e.target.value)}
-          className="mb-4 p-3 bg-[#08091d] border border-[#30363d] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="" disabled hidden>오늘의 젠더는?</option>
-          <option value="random">선택안함 (랜덤)</option>
-          <option value="male">나는 멋진 형이야 💪</option>
-          <option value="female">오늘은 예쁜 누나야 💃</option>
-          <option value="other">정체성은 내가 만든다 🧩</option>
-        </select>
-        <p className="text-sm text-gray-400 mt-2">미 선택시 랜덤으로 생성됩니다</p>
+  const styleOptions = [
+    { value: 'realistic', label: '실사' },
+    { value: '2d', label: '2D 애니메이션' },
+    { value: '3d', label: '3D 애니메이션' },
+    { value: 'cyberpunk', label: '사이버펑크' },
+    { value: 'dot', label: '도트그래픽' },
+  ];
+
+  const ageOptions = [
+    { value: 'random', label: '선택안함 (랜덤)' },
+    { value: '9', label: '9세 이하' },
+    { value: '10', label: '10대' },
+    { value: '20', label: '20대' },
+    { value: '30', label: '30대' },
+    { value: '40', label: '40대' },
+    { value: '50', label: '50대' },
+    { value: '60', label: '60대 이상' },
+  ];
+
+  const genderOptions = [
+    { value: 'random', label: '선택안함 (랜덤)' },
+    { value: 'male', label: '나는 멋진 형이야 💪' },
+    { value: 'female', label: '오늘은 예쁜 누나야 💃' },
+    { value: 'other', label: '정체성은 내가 만든다 🧩' },
+  ];
+
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: 'rgba(255,255,255,0.05)',
+      borderColor: 'rgba(255,255,255,0.2)',
+      color: 'white',
+      borderRadius: '0.75rem',
+      padding: '0.25rem 0.5rem',
+      backdropFilter: 'blur(12px)',
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: 'rgba(30,30,30,0.9)',
+      color: 'white',
+      backdropFilter: 'blur(8px)',
+      zIndex: 50,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? 'rgba(255,255,255,0.1)' : 'transparent',
+      color: 'white',
+      cursor: 'pointer',
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: 'white',
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: 'rgba(255,255,255,0.5)',
+    }),
+    input: (base) => ({
+      ...base,
+      color: 'white',
+    }),
+  };
+
+  return (
+    <div className="w-full max-w-sm rounded-xl p-6
+      bg-[rgba(255,255,255,0.05)]
+      backdrop-blur-xl
+      border border-[rgba(255,255,255,0.12)]
+      shadow-[inset_0_0_0.5px_rgba(255,255,255,0.3),_0_4px_30px_rgba(0,0,0,0.25)]
+      text-white transition-all duration-300
+      hover:scale-[1.03] transition-transform ease-in-out">
+
+      <h2 className="text-center font-semibold mb-6">정보 입력</h2>
+
+      {/* 화풍 선택 */}
+      <div className="mb-6">
+        <Select
+          value={
+            styleOptions.find((opt) => opt.value === style)
+            ?? { value: 'random', label: '선택안함 (랜덤)' }
+          }
+
+          onChange={(selected) => setStyle(selected.value)}
+          options={[
+            { value: 'random', label: '선택안함 (랜덤)' },
+            ...styleOptions,
+          ]}
+          placeholder="오늘 하루를 그려볼까요?"
+          styles={customSelectStyles}
+        />
       </div>
-    );
-  }
+
+      {/* 나이 선택 */}
+      <div className="mb-6">
+        <Select
+          value={ageOptions.find((opt) => opt.value === age) || null}
+          onChange={(selected) => setAge(selected.value)}
+          options={ageOptions}
+          placeholder="몇 살이길 원해요?"
+          styles={customSelectStyles}
+        />
+      </div>
+
+      {/* 젠더 선택 */}
+      <div className="mb-6">
+        <Select
+          value={genderOptions.find((opt) => opt.value === gender) || null}
+          onChange={(selected) => setGender(selected.value)}
+          options={genderOptions}
+          placeholder="오늘의 젠더는?"
+          styles={customSelectStyles}
+        />
+      </div>
+
+      <p className="text-center text-gray-400 mt-2">미 선택시 랜덤으로 생성됩니다</p>
+    </div>
+  );
+}

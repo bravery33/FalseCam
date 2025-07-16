@@ -7,6 +7,7 @@ import VlogRecordCard from '../components/VlogRecordCard';
 import ImagePreviewModal from '../components/ImagePreviewModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+
 export default function Home() {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
@@ -15,14 +16,15 @@ export default function Home() {
   const [style, setStyle] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [imageList, setImageList] = useState([
-    'vlog1.jpg',
-    'vlog2.jpg',
-    'vlog3.jpg',
-    'vlog4.jpg',
+    { src: '/vlog1.jpg', type: 'image' },
+    { src: '/vlog2.jpg', type: 'image' },
+    { src: '/vlog3.jpg', type: 'image' },
+    { src: '/vlog4.jpg', type: 'image' },
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [isSummoning, setIsSummoning] = useState(false); // "소환" 버튼 로딩 상태
+  const [isSummoning, setIsSummoning] = useState(false);
+  const [imageUrl, setImageUrl] = useState(''); 
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
@@ -81,10 +83,19 @@ export default function Home() {
     });
 
     const result = await response.json();
+    if (result.success && result.image) {
+      setImageList((prev) => [
+        {
+          src: result.image.startsWith('http') ? result.image : `/${result.image}`,
+          type: 'image',
+        },
+        ...prev,
+      ]);
+    }
+    
     
     if (result.success) {
-      // 생성된 이미지를 imageList에 추가
-      setImageList(prev => [result.image, ...prev]);
+      setImageList(prev => [{ src: `/${result.image}`, type: 'image' }, ...prev]);
       console.log('이미지 생성 성공!', result.image);
     } else {
       console.error('이미지 생성 실패:', result.error);
@@ -107,7 +118,8 @@ export default function Home() {
         <MainTitle />
         <DailyJournalInput text={text} setText={setText} />
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-40 pb-64 items-stretch">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-20 pb-64 items-stretch">
+
           <InfoInputCard
             style={style}
             setStyle={setStyle}

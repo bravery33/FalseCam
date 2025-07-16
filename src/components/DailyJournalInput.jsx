@@ -16,19 +16,23 @@ export default function DailyJournalInput({ text, setText }) {
 
   return (
     <div className="flex justify-center mt-10 px-4">
+      <div className="w-full max-w-2xl px-5 py-3 
+        bg-[#2d2e45]/80 
+        backdrop-blur-xl 
+        border-2 border-[#ff4d8b]
+        shadow-[0_0_20px_rgba(95,143,255,0.3)] 
+        rounded-xl transition-all duration-300">
       <textarea
         ref={textareaRef} // textarea에 ref를 연결합니다.
         placeholder="오늘 하루를 한 줄로 남겨볼까요?(최대100자)"
         value={text}
         maxLength={100}
-        onChange={(e) => setText(e.target.value)} // 높이 조절 로직은 useEffect로 옮겼습니다.
-        // rows="1"을 추가하고 h-14를 제거하여 시작 높이를 한 줄로 만듭니다.
+        onChange={(e) => setText(e.target.value)} 
         rows="1"
-        className="max-w-2xl w-full p-4 bg-[#08091d] border border-[#30363d] 
-                   rounded-xl text-white placeholder-gray-400 shadow-lg 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 
-                   resize-none overflow-hidden leading-relaxed transition-all duration-200"
-      />
+        className="w-full bg-transparent border-none text-white placeholder-gray-400 
+                 focus:outline-none resize-none overflow-hidden leading-relaxed"
+    />
     </div>
+  </div>
   );
 }
