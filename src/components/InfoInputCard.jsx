@@ -2,6 +2,7 @@ import Select from 'react-select';
 
 export default function InfoInputCard({ style, setStyle, age, setAge, gender, setGender }) {
   const styleOptions = [
+    { value: 'random', label: '선택안함 (랜덤)' },
     { value: 'realistic', label: '실사' },
     { value: '2d', label: '2D 애니메이션' },
     { value: '3d', label: '3D 애니메이션' },
@@ -71,23 +72,16 @@ export default function InfoInputCard({ style, setStyle, age, setAge, gender, se
       border border-[rgba(255,255,255,0.12)]
       shadow-[inset_0_0_0.5px_rgba(255,255,255,0.3),_0_4px_30px_rgba(0,0,0,0.25)]
       text-white transition-all duration-300
-      hover:scale-[1.03] transition-transform ease-in-out">
+      hover:scale-[1.13] transition-transform ease-in-out">
 
-      <h2 className="text-center font-semibold mb-6">정보 입력</h2>
+      <h2 className="text-center text-lg font-semibold mb-6">정보 입력</h2>
 
       {/* 화풍 선택 */}
       <div className="mb-6">
         <Select
-          value={
-            styleOptions.find((opt) => opt.value === style)
-            ?? { value: 'random', label: '선택안함 (랜덤)' }
-          }
-
+          value={style ? styleOptions.find((opt) => opt.value === style) : null}
           onChange={(selected) => setStyle(selected.value)}
-          options={[
-            { value: 'random', label: '선택안함 (랜덤)' },
-            ...styleOptions,
-          ]}
+          options={styleOptions}
           placeholder="오늘 하루를 그려볼까요?"
           styles={customSelectStyles}
         />
@@ -115,7 +109,7 @@ export default function InfoInputCard({ style, setStyle, age, setAge, gender, se
         />
       </div>
 
-      <p className="text-center text-gray-400 mt-2">미 선택시 랜덤으로 생성됩니다</p>
+      <p className="text-sm text-gray-300 mt-4 text-center">미 선택시 랜덤으로 생성됩니다</p>
     </div>
   );
 }
