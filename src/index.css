@@ -2,3 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 스크롤바 트랙 배경 제거 + 얇게 만들기 */
+::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.4);
+    border-radius: 4px;
+  }
+  
+  

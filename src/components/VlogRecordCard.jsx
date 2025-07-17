@@ -8,9 +8,9 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
       border border-[rgba(255,255,255,0.12)]
       shadow-[inset_0_0_0.5px_rgba(255,255,255,0.3),_0_4px_30px_rgba(0,0,0,0.25)]
       text-white transition-all duration-300
-      hover:scale-[1.03] transition-transform ease-in-out">
+      hover:scale-[1.13] transition-transform ease-in-out">
 
-      <h2 className="text-center text-lg font-semibold mb-4">내 브이로그 기록</h2>
+      <h2 className="text-center text-lg font-semibold mb-6">내 브이로그 기록</h2>
 
       <div className="relative w-full flex justify-center items-center">
         {/* ◀ 이전 버튼 */}
@@ -25,22 +25,23 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
         )}
 
         {/* 썸네일 이미지 */}
-        <div className="relative w-full">
+        <div className="w-full h-[180px] overflow-hidden rounded-lg bg-black flex items-center justify-center">
           <img
-            src={currentItem.src}
+            src={imageList[currentIndex]}
             onClick={() => openPreview(currentIndex)}
             alt={`브이로그 썸네일 ${currentIndex + 1}`}
+            // 👇 이 부분의 클래스를 수정하여 높이를 고정합니다.
             className="rounded-lg w-full h-[180px] object-cover cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
           />
 
-          {/* 🎬 영상이면 플레이 버튼 표시 */}
-          {currentItem.type === 'video' && (
-            <div className="absolute bottom-2 right-2 w-10 h-10 bg-white/10 backdrop-blur-md rounded-full border border-white shadow-[0_0_12px_#f472b6] flex items-center justify-center">
-              <div className="w-0 h-0 border-t-6 border-b-6 border-l-8 border-t-transparent border-b-transparent border-l-white ml-[2px]" />
-            </div>
-          )}
-
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev + 1) % imageList.length)}
+            className="absolute right-0 z-10 text-white text-2xl px-2 py-1 bg-black/30 rounded-full hover:bg-black/60"
+          >
+            →
+          </button>
         </div>
+
 
         {/* ▶ 다음 버튼 */}
         <button
@@ -52,28 +53,31 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
         </button>
       </div>
 
-      <div className="flex justify-center mt-4">
-  <div className="flex items-center space-x-2 max-w-[240px] overflow-x-auto px-4 py-2 
-  bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-inner scrollbar-hide mt-2">
-    {imageList.map((_, idx) => (
-      <span
-        key={idx}
-        className={`w-2.5 h-2.5 rounded-full shrink-0 ${idx === currentIndex ? 'bg-white' : 'bg-gray-500'} transition`}
-      />
-    ))}
-  </div>
-</div>
+      <div className="flex flex-col items-center mt-4">
+        <div className="flex items-center space-x-2 max-w-[240px] overflow-x-auto px-4 py-2 
+        bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-inner
+        scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent mt-2">
 
 
-
-      <p className="text-center text-gray-300 mt-6 mb-1 italic tracking-wide font-light">
-        {new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          weekday: 'short',
-        })}
-      </p>
+          {imageList.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-2.5 h-2.5 rounded-full shrink-0 
+          ${idx === currentIndex ? 'bg-white' : 'bg-gray-500'} 
+          transition focus:outline-none`}
+            />
+          ))}
+        </div>
+        <p className="text-sm text-gray-300 mt-6 mb-1 italic tracking-wide font-light">
+          {new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'short',
+          })}
+        </p>
+      </div>
     </div>
   );
 }

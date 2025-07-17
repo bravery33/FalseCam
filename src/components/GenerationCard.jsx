@@ -8,14 +8,14 @@ export default function GenerationCard({ file, handleFileChange, loading, handle
       border border-[rgba(255,255,255,0.12)]
       shadow-[inset_0_0_0.5px_rgba(255,255,255,0.3),_0_4px_30px_rgba(0,0,0,0.25)]
       text-white transition-all duration-300
-      hover:scale-[1.03] transition-transform ease-in-out"
+      hover:scale-[1.13] transition-transform ease-in-out"
     >
-      <h2 className="text-center font-semibold mb-4">새로운 브이로그 생성</h2>
+      <h2 className="text-center text-lg font-semibold mb-6">새로운 브이로그 생성</h2>
 
       {/* ✅ 업로드 박스 */}
       <label
         htmlFor="file-upload"
-        className="relative w-full h-40 flex flex-col items-center justify-center mb-4 
+        className="relative w-full h-40 flex flex-col items-center justify-center mb-6 
         bg-[rgba(255,255,255,0.05)] backdrop-blur-xl
         border border-dashed border-[rgba(255,255,255,0.2)]
         shadow-[inset_0_0_0.5px_rgba(255,255,255,0.2),_0_0_20px_rgba(0,0,0,0.15)]
@@ -34,7 +34,7 @@ export default function GenerationCard({ file, handleFileChange, loading, handle
         {!uploadedImageUrl && (
           <>
             <img src="/upload.png" alt="업로드" className="w-10 h-10 mb-2 opacity-70 z-10" />
-            <span className="text-center leading-snug z-10 px-4">
+            <span htmlFor="uploadImage" className="text-center leading-snug z-10 px-2">
               얼굴 넣으면 "나만의 드라마"<br />
               안 넣으면 "AI가 꾸민 가짜 기억 여행"
             </span>
@@ -78,7 +78,7 @@ export default function GenerationCard({ file, handleFileChange, loading, handle
         </span>
       </button>
 
-      <p className="text-sm text-gray-400 mt-2 text-center">
+      <p className="text-sm text-gray-300 mt-4 text-center">
         올려주신 사진은 생성 후 삭제됩니다
       </p>
     </div>
