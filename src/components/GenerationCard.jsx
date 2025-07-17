@@ -26,7 +26,7 @@ export default function GenerationCard({ file, handleFileChange, loading, handle
           <img
             src={uploadedImageUrl}
             alt="미리보기"
-            className="absolute inset-0 w-full h-full object-cover z-0"
+            className="absolute inset-0 w-full h-full object-contain z-0"
           />
         )}
 

@@ -15,12 +15,7 @@ export default function Home() {
   const [age, setAge] = useState('');
   const [style, setStyle] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [imageList, setImageList] = useState([
-    'vlog1.jpg',
-    'vlog2.jpg',
-    'vlog3.jpg',
-    'vlog4.jpg',
-  ]);
+  const [imageList, setImageList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isSummoning, setIsSummoning] = useState(false); 
@@ -127,6 +122,7 @@ export default function Home() {
 
       if (result.success && result.image) {
         setImageList((prev) => [{ src: result.image, type: 'image' }, ...prev]);
+        setCurrentIndex(0); 
         console.log('이미지 생성 성공!', result.image);
       } else {
         console.error('이미지 생성 실패:', result.error);
@@ -155,7 +151,7 @@ export default function Home() {
         <MainTitle />
         <DailyJournalInput text={text} setText={setText} />
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-40 pb-64 items-stretch">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-20 pb-64 items-stretch">
           <InfoInputCard
             style={style}
             setStyle={setStyle}

@@ -1,5 +1,25 @@
+import { useRef, useEffect } from "react";
+
 export default function VlogRecordCard({ imageList, currentIndex, setCurrentIndex, openPreview }) {
-  const currentItem = imageList[currentIndex];
+  const isEmpty = imageList.length === 0;
+
+  // 인디케이터 컨테이너 ref
+  const indicatorRef = useRef(null);
+
+  // currentIndex가 바뀔 때마다 인디케이터(점) 자동 스크롤
+  useEffect(() => {
+    if (!indicatorRef.current) return;
+    const container = indicatorRef.current;
+    const dots = container.querySelectorAll('button');
+    if (dots.length === 0) return;
+    const activeDot = dots[currentIndex];
+    if (!activeDot) return;
+
+    // 중앙에 오도록 스크롤 계산
+    const scrollLeft =
+      activeDot.offsetLeft - container.offsetWidth / 2 + activeDot.offsetWidth / 2;
+    container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+  }, [currentIndex, imageList.length]);
 
   return (
     <div className="w-full max-w-sm rounded-xl p-6
@@ -13,8 +33,21 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
       <h2 className="text-center text-lg font-semibold mb-6">내 브이로그 기록</h2>
 
       <div className="relative w-full flex justify-center items-center">
+        <div className="w-full h-[180px] overflow-hidden rounded-lg bg-transparent flex items-center justify-center">
+          {isEmpty ? (
+            <div className="text-gray-400 text-center w-full">브이로그가 아직 없습니다.</div>
+          ) : (
+            <img
+              src={imageList[currentIndex].src}
+              onClick={() => openPreview(currentIndex)}
+              alt={`브이로그 썸네일 ${currentIndex + 1}`}
+              className="rounded-lg w-full h-[180px] object-contain cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+            />
+          )}
+        </div>
+
         {/* ◀ 이전 버튼 */}
-        {currentIndex !== 0 && (
+        {!isEmpty && currentIndex !== 0 && (
           <button
             onClick={() => setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length)}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
@@ -24,60 +57,49 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
           </button>
         )}
 
-        {/* 썸네일 이미지 */}
-        <div className="w-full h-[180px] overflow-hidden rounded-lg bg-black flex items-center justify-center">
-          <img
-            src={imageList[currentIndex]}
-            onClick={() => openPreview(currentIndex)}
-            alt={`브이로그 썸네일 ${currentIndex + 1}`}
-            // 👇 이 부분의 클래스를 수정하여 높이를 고정합니다.
-            className="rounded-lg w-full h-[180px] object-cover cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-          />
-
+        {/* ▶ 다음 버튼 */}
+        {!isEmpty && (
           <button
             onClick={() => setCurrentIndex((prev) => (prev + 1) % imageList.length)}
-            className="absolute right-0 z-10 text-white text-2xl px-2 py-1 bg-black/30 rounded-full hover:bg-black/60"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
+            aria-label="다음 이미지"
           >
-            →
+            ▶
           </button>
-        </div>
-
-
-        {/* ▶ 다음 버튼 */}
-        <button
-          onClick={() => setCurrentIndex((prev) => (prev + 1) % imageList.length)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
-          aria-label="다음 이미지"
-        >
-          ▶
-        </button>
+        )}
       </div>
 
-      <div className="flex flex-col items-center mt-4">
-        <div className="flex items-center space-x-2 max-w-[240px] overflow-x-auto px-4 py-2 
-        bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-inner
-        scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent mt-2">
-
-
-          {imageList.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-2.5 h-2.5 rounded-full shrink-0 
-          ${idx === currentIndex ? 'bg-white' : 'bg-gray-500'} 
-          transition focus:outline-none`}
-            />
-          ))}
+      {/* 인디케이터 및 날짜 - 썸네일이 있을 때만 표시 */}
+      {!isEmpty && (
+        <div className="flex flex-col items-center mt-4">
+          {/* 인디케이터 */}
+          <div
+            ref={indicatorRef}
+            className="flex items-center space-x-2 max-w-[240px] overflow-x-auto px-4 py-2 
+              bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-inner
+              scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent mt-2"
+          >
+            {imageList.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`w-2.5 h-2.5 rounded-full shrink-0 
+                  ${idx === currentIndex ? 'bg-white' : 'bg-gray-500'} 
+                  transition focus:outline-none`}
+              />
+            ))}
+          </div>
+          {/* 날짜 */}
+          <p className="text-sm text-gray-300 mt-6 mb-1 italic tracking-wide font-light">
+            {new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              weekday: 'short',
+            })}
+          </p>
         </div>
-        <p className="text-sm text-gray-300 mt-6 mb-1 italic tracking-wide font-light">
-          {new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'short',
-          })}
-        </p>
-      </div>
+      )}
     </div>
   );
 }
