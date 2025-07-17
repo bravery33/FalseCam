@@ -7,3 +7,4 @@ uvicorn
 python-dotenv
 openai
 python-multipart
+fal_client
