@@ -10,7 +10,7 @@ from typing import Optional
 import openai
 import requests
 from dotenv import load_dotenv
-from fastapi import APIRouter, Form, UploadFile
+from fastapi import APIRouter, Form, File, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 
@@ -31,11 +31,13 @@ BFL_ENDPOINT = "https://api.bfl.ai/v1/flux-kontext-pro"
 
 
 STYLE_PROMPT = {
-    "realistic": "hyper-detailed, sharp focus, DSLR photo, documentary style, 100mm lens, soft natural lighting",
-    "2D": "vibrant colors, expressive eyes, clean line art, cel shading, anime screencap, flat design aesthetic",
-    "3D": "pixar-like animation style, smooth surfaces, subsurface scattering, warm and inviting lighting, cute 3D character",
-    "cyberpunk": "neon-soaked cityscape, dramatic backlighting, holographic elements, reflective surfaces, futuristic sci-fi fantasy",
-    "dot": "8-bit pixel art character, full body, retro gaming style, low resolution"
+    "realistic": "semi_realistic, hyper-detailed, sharp focus, DSLR photo, documentary style, 100mm lens, soft natural lighting, perfect skin, editorial photo, 4k, k-fasion, designer clothes, stylisth",
+    "2d": "anime, flat design aesthetic, vibrant colors, expressive eyes, clean line art, cel shading,k-fasion, designer clothes, stylisth",
+    "3d": "pixar-like animation style, smooth surfaces, cinematic lighting, subsurface scattering, warm and inviting lighting, cute 3D character, dreamy, k-fasion, designer clothes, stylisth",
+    "cyberpunk": "cyberpunk, neon-soaked cityscape, dramatic backlighting, holographic elements, reflective surfaces, futuristic sci-fi fantasy",
+    "dot": "8-bit pixel art character, full body, standing, retro video game sprite, "
+    "visible pixels, blocky edges, choppy lines, limited color palette, "
+    "pixel grid, low resolution, pixel art background, game screenshot, k-fasion, designer clothes, stylisth"
 }
 
 
@@ -92,7 +94,7 @@ async def generate_image(
     style: str = Form(""),
     age: str = Form(""),
     gender: str = Form(""),
-    image: Optional[UploadFile] = None
+    image: Optional[UploadFile] = File(None)
 ) -> JSONResponse:
 
     if not BFL_API_KEY:
@@ -102,11 +104,24 @@ async def generate_image(
         )
 
     translated_prompt: str = await get_translated_text(text)
-    style_prompt: str = STYLE_PROMPT.get(style) or choice(list(STYLE_PROMPT.values()))
-    gender_en: str = GENDER_KO_TO_EN.get(gender) or choice(list(GENDER_KO_TO_EN.values()))
-    final_age: str = AGE_MAP.get(age) or choice(list(AGE_MAP.values()))
+
+    if style and style in STYLE_PROMPT:
+        style_prompt = STYLE_PROMPT[style]
+    else:
+        style_prompt = choice(list(STYLE_PROMPT.values()))
+
+    if gender and gender in GENDER_KO_TO_EN:
+        gender_en = GENDER_KO_TO_EN[gender]
+    else:
+        gender_en = choice(list(GENDER_KO_TO_EN.values()))
+
+    if age and age in AGE_MAP:
+        final_age = AGE_MAP[age]
+    else:
+        final_age = choice(list(AGE_MAP.values()))
+
     paparazzi_prompt: str = (
-        "full-body shot, candid, not looking at the camera, "
+        "not looking at the camera, full-body shot, candid,"
         "like a paparazzi photo, natural moment"
     )
     ethnicity_keyword: str = "Korean" if contains_korean(text) else ""
@@ -197,7 +212,6 @@ async def generate_image(
                 
                 output_format = payload.get("output_format", "png")
                 data_uri = f"data:image/{output_format};base64,{encoded_image}"
-                logging.info(f"API로 보낼 payload: {payload}")
                 return JSONResponse(content={"success": True, "image": data_uri})
             elif result.get("status") in ["Error", "Failed"]:
                 logging.error(f"❌ 이미지 생성 실패 또는 오류 발생: {result}")
