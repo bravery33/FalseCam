@@ -18,7 +18,7 @@ export default function Home() {
   const [imageList, setImageList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [isSummoning, setIsSummoning] = useState(false); 
+  const [isSummoning, setIsSummoning] = useState(false);
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
@@ -94,12 +94,12 @@ export default function Home() {
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 95) {
-          clearInterval(interval); 
+          clearInterval(interval);
           return prev;
         }
         return prev + 2;
       });
-    }, 200); 
+    }, 200);
 
     try {
       const formData = new FormData();
@@ -112,7 +112,7 @@ export default function Home() {
         formData.append('image', file);
       }
 
-    
+
       const response = await fetch('https://falsecam.onrender.com/generate/image', {
         method: 'POST',
         body: formData,
@@ -122,22 +122,45 @@ export default function Home() {
 
       if (result.success && result.image) {
         setImageList((prev) => [{ src: result.image, type: 'image' }, ...prev]);
-        setCurrentIndex(0); 
+        setCurrentIndex(0);
         console.log('이미지 생성 성공!', result.image);
+        // [여기] 비디오 생성 API 호출
+        try {
+          const videoRes = await fetch('https://falsecam.onrender.com/generate/video', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: text,
+              image_url: result.image,
+              style,
+              age,
+              gender,
+            }),
+          });
+          const videoResult = await videoRes.json();
+          if (videoResult.success) {
+            console.log('비디오 생성 성공!', videoResult);
+            // 필요시 setState 등 후처리
+          } else {
+            console.error('비디오 생성 실패:', videoResult.error);
+          }
+        } catch (err) {
+          console.error('비디오 생성 API 호출 오류:', err);
+        }
+
       } else {
         console.error('이미지 생성 실패:', result.error);
       }
     } catch (error) {
       console.error('API 호출 실패:', error);
     } finally {
-          setTimeout(() => {
-        setProgress(100); 
+      setTimeout(() => {
+        setProgress(100);
         setTimeout(() => {
-          setIsSummoning(false); 
-        }, 500); 
-      }, 2000); 
+          setIsSummoning(false);
+        }, 500);
+      }, 2000);
     }
-
   };
 
   return (
@@ -178,7 +201,7 @@ export default function Home() {
       <ImagePreviewModal
         isOpen={previewOpen}
         setIsOpen={setPreviewOpen}
-        loading={loading} 
+        loading={loading}
         imageList={imageList}
         currentIndex={currentIndex}
         prevImage={prevImage}
