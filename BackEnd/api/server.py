@@ -16,3 +16,7 @@ app.add_middleware(
 )
 
 app.include_router(services.router)
+
+@app.get("/healthz")
+def health():
+    return {"status": "ok"}
