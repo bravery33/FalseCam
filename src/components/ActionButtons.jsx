@@ -6,16 +6,18 @@ export default function ActionButtons({ handleDownload, openInstagram }) {
         className="flex items-center justify-center p-2 bg-white text-black rounded-full shadow hover:bg-gray-100"
         title="Download"
       >
-        <img src="/download-icon.jpg" alt="Download" className="w-5 h-5" />
+        <img src="/download-icon.jpg" alt="Download" className="w-7 h-7" />
       </button>
 
       <button
         onClick={openInstagram}
-        className="flex items-center justify-center p-2 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 rounded-full"
+        className="flex items-center justify-center p-2 bg-white rounded-full shadow-md hover:scale-105 transition"
         title="Open Instagram"
       >
-        <img src="/instagram-icon.png" alt="Instagram" className="w-5 h-5" />
+        <img src="/instagram-icon.png" alt="Instagram" className="w-7 h-7" />
       </button>
+
+
     </div>
   );
 }

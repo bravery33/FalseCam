@@ -34,7 +34,7 @@ export default function GenerationCard({ file, handleFileChange, loading, handle
         {!uploadedImageUrl && (
           <>
             <img src="/upload.png" alt="업로드" className="w-10 h-10 mb-2 opacity-70 z-10" />
-            <span className="text-center leading-snug z-10 px-4">
+            <span htmlFor="uploadImage" className="text-center leading-snug z-10 px-2">
               얼굴 넣으면 "나만의 드라마"<br />
               안 넣으면 "AI가 꾸민 가짜 기억 여행"
             </span>

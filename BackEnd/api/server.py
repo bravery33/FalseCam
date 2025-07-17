@@ -6,10 +6,17 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://falsecam.pages.dev"
+        ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(services.router)
+
+@app.get("/healthz")
+def health():
+    return {"status": "ok"}

@@ -6,7 +6,7 @@ import GenerationCard from '../components/GenerationCard';
 import VlogRecordCard from '../components/VlogRecordCard';
 import ImagePreviewModal from '../components/ImagePreviewModal';
 import LoadingSpinner from '../components/LoadingSpinner';
-
+import CustomAlertModal from '../components/CustomAlertModal';
 
 export default function Home() {
   const [text, setText] = useState('');
@@ -16,25 +16,49 @@ export default function Home() {
   const [style, setStyle] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [imageList, setImageList] = useState([
-    { src: '/vlog1.jpg', type: 'image' },
-    { src: '/vlog2.jpg', type: 'image' },
-    { src: '/vlog3.jpg', type: 'image' },
-    { src: '/vlog4.jpg', type: 'image' },
+    'vlog1.jpg',
+    'vlog2.jpg',
+    'vlog3.jpg',
+    'vlog4.jpg',
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [isSummoning, setIsSummoning] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
+  const [isSummoning, setIsSummoning] = useState(false); 
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
+    if (!uploaded) return;
+
+    if (!uploaded.type.startsWith("image/")) {
+      setAlertMessage("이미지 파일만 업로드할 수 있어요!");
+      setAlertSubMessage("이미지 파일을 추가해주세요!");
+      setShowAlert(true);
+      e.target.value = "";
+      return;
+    }
+
+    if (uploaded.size > 5 * 1024 * 1024) {
+      setAlertMessage("5MB 이하 이미지 파일만 업로드할 수 있어요!");
+      setAlertSubMessage("5MB 이하의 파일을 올려주세요!");
+      setShowAlert(true);
+      e.target.value = "";
+      return;
+    }
+
     setFile(uploaded);
   };
 
+
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertSubMessage, setAlertSubMessage] = useState('');
+
+
+
+
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = imageList[currentIndex];
-    link.download = `vlog_${currentIndex + 1}.jpg`;
+    link.href = imageList[currentIndex].src;
+    link.download = `vlog_${currentIndex + 1}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -47,7 +71,6 @@ export default function Home() {
   const openPreview = (index) => {
     setCurrentIndex(index);
     setPreviewOpen(true);
-    // 미리보기 시의 로딩 (이미지 생성과는 별개)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -62,9 +85,26 @@ export default function Home() {
     setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
   };
 
-  // "오늘 하루 소환!" 버튼 클릭 시 실행될 함수
+  const [progress, setProgress] = useState(0);
+
+  const [alertMessage, setAlertMessage] = useState('');
+
+
+
+
   const handleGenerate = async () => {
     setIsSummoning(true);
+    setProgress(0);
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(interval); 
+          return prev;
+        }
+        return prev + 2;
+      });
+    }, 200); 
 
     try {
       const formData = new FormData();
@@ -77,25 +117,16 @@ export default function Home() {
         formData.append('image', file);
       }
 
-      const response = await fetch('http://127.0.0.1:8000/generate/image', {
+    
+      const response = await fetch('https://falsecam.onrender.com/generate/image', {
         method: 'POST',
         body: formData,
       });
 
       const result = await response.json();
+
       if (result.success && result.image) {
-        setImageList((prev) => [
-          {
-            src: result.image,
-            type: 'image',
-          },
-          ...prev,
-        ]);
-      }
-
-
-      if (result.success) {
-        setImageList(prev => [{ src: result.image, type: 'image' }, ...prev]);
+        setImageList((prev) => [{ src: result.image, type: 'image' }, ...prev]);
         console.log('이미지 생성 성공!', result.image);
       } else {
         console.error('이미지 생성 실패:', result.error);
@@ -103,8 +134,14 @@ export default function Home() {
     } catch (error) {
       console.error('API 호출 실패:', error);
     } finally {
-      setIsSummoning(false);
+          setTimeout(() => {
+        setProgress(100); 
+        setTimeout(() => {
+          setIsSummoning(false); 
+        }, 500); 
+      }, 2000); 
     }
+
   };
 
   return (
@@ -118,8 +155,7 @@ export default function Home() {
         <MainTitle />
         <DailyJournalInput text={text} setText={setText} />
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-20 pb-64 items-stretch">
-
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-40 pb-64 items-stretch">
           <InfoInputCard
             style={style}
             setStyle={setStyle}
@@ -131,7 +167,7 @@ export default function Home() {
           <GenerationCard
             file={file}
             handleFileChange={handleFileChange}
-            loading={isSummoning} // isSummoning 상태를 loading prop으로 전달
+            loading={isSummoning}
             handleGenerate={handleGenerate}
           />
           <VlogRecordCard
@@ -146,7 +182,7 @@ export default function Home() {
       <ImagePreviewModal
         isOpen={previewOpen}
         setIsOpen={setPreviewOpen}
-        loading={loading} // 미리보기 로딩 상태
+        loading={loading} 
         imageList={imageList}
         currentIndex={currentIndex}
         prevImage={prevImage}
@@ -156,7 +192,39 @@ export default function Home() {
       />
 
       {/* "소환" 버튼 클릭 시 나타나는 로딩 화면 */}
-      {isSummoning && <LoadingSpinner />}
+      {isSummoning && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 text-white">
+          <p className="mb-4 text-lg">당신의 하루를 마법처럼 소환 중이에요...</p>
+
+          {/* 캐릭터 + 게이지 */}
+          <div className="relative w-64 h-12 mb-2">
+            <img
+              src="/rabbit.jpg"
+              alt="Rabbit"
+              className="absolute bottom-4 left-0 w-12 h-12 animate-bounce"
+              style={{ left: `${progress}%`, transform: 'translateX(-50%)' }}
+            />
+
+            <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="bg-purple-500 h-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          <p className="text-sm">{progress}%</p>
+        </div>
+      )}
+      <CustomAlertModal
+        isOpen={showAlert}
+        onClose={() => setShowAlert(false)}
+        message={alertMessage}
+        subMessage={alertSubMessage}
+      />
+
+
+
     </div>
   );
 }
