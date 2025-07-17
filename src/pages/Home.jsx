@@ -23,7 +23,7 @@ export default function Home() {
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [isSummoning, setIsSummoning] = useState(false); // "소환" 버튼 로딩 상태
+  const [isSummoning, setIsSummoning] = useState(false); 
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
@@ -71,7 +71,6 @@ export default function Home() {
   const openPreview = (index) => {
     setCurrentIndex(index);
     setPreviewOpen(true);
-    // 미리보기 시의 로딩 (이미지 생성과는 별개)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -93,21 +92,19 @@ export default function Home() {
 
 
 
-  // "오늘 하루 소환!" 버튼 클릭 시 실행될 함수
   const handleGenerate = async () => {
     setIsSummoning(true);
-    setProgress(0); // 시작할 때 0으로 초기화
+    setProgress(0);
 
-    // 가짜 게이지 애니메이션 시작
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 95) {
-          clearInterval(interval); // 너무 미리 100 되지 않게 제한
+          clearInterval(interval); 
           return prev;
         }
         return prev + 2;
       });
-    }, 200); // 0.2초마다 증가
+    }, 200); 
 
     try {
       const formData = new FormData();
@@ -120,8 +117,8 @@ export default function Home() {
         formData.append('image', file);
       }
 
-      // 'https://falsecam.onrender.com/generate/image',
-      const response = await fetch('http://127.0.0.1:8000/generate/image', {
+    
+      const response = await fetch('https://falsecam.onrender.com/generate/image', {
         method: 'POST',
         body: formData,
       });
@@ -137,13 +134,12 @@ export default function Home() {
     } catch (error) {
       console.error('API 호출 실패:', error);
     } finally {
-      // 응답이 빨리 와도 최소 2초는 로딩 보여줌
-      setTimeout(() => {
-        setProgress(100); // 게이지는 마지막에 100% 도달
+          setTimeout(() => {
+        setProgress(100); 
         setTimeout(() => {
-          setIsSummoning(false); // 로딩 종료
-        }, 500); // 0.5초 후 종료
-      }, 2000); // 최소 로딩 시간 2초 확보
+          setIsSummoning(false); 
+        }, 500); 
+      }, 2000); 
     }
 
   };
@@ -171,7 +167,7 @@ export default function Home() {
           <GenerationCard
             file={file}
             handleFileChange={handleFileChange}
-            loading={isSummoning} // isSummoning 상태를 loading prop으로 전달
+            loading={isSummoning}
             handleGenerate={handleGenerate}
           />
           <VlogRecordCard
@@ -186,7 +182,7 @@ export default function Home() {
       <ImagePreviewModal
         isOpen={previewOpen}
         setIsOpen={setPreviewOpen}
-        loading={loading} // 미리보기 로딩 상태
+        loading={loading} 
         imageList={imageList}
         currentIndex={currentIndex}
         prevImage={prevImage}
@@ -195,7 +191,6 @@ export default function Home() {
         openInstagram={openInstagram}
       />
 
-      {/* "소환" 버튼 클릭 시 나타나는 로딩 화면 */}
       {/* "소환" 버튼 클릭 시 나타나는 로딩 화면 */}
       {isSummoning && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 text-white">
