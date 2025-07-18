@@ -7,6 +7,8 @@ import VlogRecordCard from '../components/VlogRecordCard';
 import ImagePreviewModal from '../components/ImagePreviewModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CustomAlertModal from '../components/CustomAlertModal';
+import { getSessionID } from '../utils/session';
+
 
 export default function Home() {
   const [text, setText] = useState('');
@@ -112,9 +114,12 @@ export default function Home() {
         formData.append('image', file);
       }
 
-
+      const sessionID = getSessionID(); // 이 줄 추가
       const response = await fetch('https://falsecam.onrender.com/generate/image', {
         method: 'POST',
+        headers: {
+          'sessionID': sessionID // 이 줄 추가!
+        },
         body: formData,
       });
 
@@ -128,7 +133,8 @@ export default function Home() {
         try {
           const videoRes = await fetch('https://falsecam.onrender.com/generate/video', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json','sessionID': sessionID // 이것도 추가!
+  },
             body: JSON.stringify({
               prompt: text,
               image_url: result.image,
@@ -170,16 +176,34 @@ export default function Home() {
     >
       <div className="fixed inset-0 w-full h-full z-0 pointer-events-none bg-[#0f1028]/60 backdrop-blur-sm" />
 
+
+
+
       <div className="relative z-10 text-white font-sans">
-        <div className="absolute top-5 left-16 flex items-center z-50">
-          <img src="/logo.png" alt="로고" className="h-12 w-12 mr-0"
-            style={{
-              filter: "drop-shadow(0 0 18px #fff) drop-shadow(0 0 48px #fff)",
-              background: "transparent"
-            }}
-          />
-          <span className="text-2xl font-bold tracking-tight" style={{ letterSpacing: '0.03em' }}>FalseCam</span>
-        </div>
+  <div className="absolute top-0 left-16 flex items-center px-6 py-2 rounded-2xl z-50">
+    <img
+      src="/logo.png"
+      alt="로고"
+      className="h-20 w-20 mr-0"
+      style={{
+        filter: "brightness(99%) saturate(80%) blur(0.5px)",
+        transition: "filter 0.3s ease-in-out",
+        background: "transparent"
+      }}
+    />
+    <span
+      className="text-2xl font-bold tracking-tight"
+      style={{ letterSpacing: "0.03em" }}
+    >
+      FalseCam
+    </span>
+  </div>
+
+
+
+
+
+
         <MainTitle />
         <DailyJournalInput text={text} setText={setText} />
 

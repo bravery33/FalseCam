@@ -27,8 +27,8 @@ export default function InfoInputCard({ style, setStyle, age, setAge, gender, se
 
   const genderOptions = [
     { value: 'random', label: '선택안함 (랜덤)' },
-    { value: 'male', label: '나는 멋진 형이야 💪' },
-    { value: 'female', label: '오늘은 예쁜 누나야 💃' },
+    { value: 'male', label: '남성' },
+    { value: 'female', label: '여성' },
     { value: 'other', label: '정체성은 내가 만든다 🧩' },
   ];
 
