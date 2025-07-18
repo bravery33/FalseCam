@@ -2,11 +2,10 @@ import { useRef, useEffect } from "react";
 
 export default function VlogRecordCard({ imageList, currentIndex, setCurrentIndex, openPreview }) {
   const isEmpty = imageList.length === 0;
+  const currentItem = imageList[currentIndex]; // 현재 아이템 정보 가져오기
 
-  // 인디케이터 컨테이너 ref
   const indicatorRef = useRef(null);
 
-  // currentIndex가 바뀔 때마다 인디케이터(점) 자동 스크롤
   useEffect(() => {
     if (!indicatorRef.current) return;
     const container = indicatorRef.current;
@@ -15,7 +14,6 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
     const activeDot = dots[currentIndex];
     if (!activeDot) return;
 
-    // 중앙에 오도록 스크롤 계산
     const scrollLeft =
       activeDot.offsetLeft - container.offsetWidth / 2 + activeDot.offsetWidth / 2;
     container.scrollTo({ left: scrollLeft, behavior: "smooth" });
@@ -33,46 +31,30 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
       <h2 className="text-center text-lg font-semibold mb-6">내 브이로그 기록</h2>
 
       <div className="relative w-full flex justify-center items-center">
-        <div className="w-full h-[180px] overflow-hidden rounded-lg bg-transparent flex items-center justify-center">
+        {/* 아래 div의 h-[180px]를 h-48로 변경하여 높이를 늘립니다. */}
+        <div className="w-full h-48 overflow-hidden rounded-lg bg-transparent flex items-center justify-center">
           {isEmpty ? (
             <div className="text-gray-400 text-center w-full">브이로그가 아직 없습니다.</div>
           ) : (
-            <img
-              src={imageList[currentIndex].src}
-              onClick={() => openPreview(currentIndex)}
-              alt={`브이로그 썸네일 ${currentIndex + 1}`}
-              className="rounded-lg w-full h-[180px] object-contain cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-            />
+            <div className="relative w-full h-full" onClick={() => openPreview(currentIndex)}>
+              <img
+                src={currentItem.src}
+                alt={`브이로그 썸네일 ${currentIndex + 1}`}
+                className="rounded-lg w-full h-full object-contain cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              />
+              {/* 현재 아이템이 비디오 타입이면 재생 아이콘 표시 */}
+              {currentItem.type === 'video' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                  <span className="text-white text-5xl drop-shadow-lg">▶</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
-
-        {/* ◀ 이전 버튼 */}
-        {!isEmpty && currentIndex !== 0 && (
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
-            aria-label="이전 이미지"
-          >
-            ◀
-          </button>
-        )}
-
-        {/* ▶ 다음 버튼 */}
-        {!isEmpty && (
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % imageList.length)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
-            aria-label="다음 이미지"
-          >
-            ▶
-          </button>
-        )}
       </div>
 
-      {/* 인디케이터 및 날짜 - 썸네일이 있을 때만 표시 */}
       {!isEmpty && (
         <div className="flex flex-col items-center mt-4">
-          {/* 인디케이터 */}
           <div
             ref={indicatorRef}
             className="flex items-center space-x-2 max-w-[240px] overflow-x-auto px-4 py-2 
@@ -89,9 +71,8 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
               />
             ))}
           </div>
-          {/* 날짜 */}
           <p className="text-sm text-gray-300 mt-6 mb-1 italic tracking-wide font-light">
-            {new Date().toLocaleDateString('en-US', {
+            {new Date(currentItem.date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',

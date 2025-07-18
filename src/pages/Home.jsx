@@ -90,6 +90,14 @@ export default function Home() {
 
 
   const handleGenerate = async () => {
+    // 텍스트 입력 유효성 검사
+    if (!text.trim()) {
+      setAlertMessage("일기 내용을 먼저 작성해주세요!");
+      setAlertSubMessage("오늘 있었던 일을 간단하게 들려주세요.");
+      setShowAlert(true);
+      return;
+    }
+
     setIsSummoning(true);
     setProgress(0);
 
@@ -114,11 +122,11 @@ export default function Home() {
         formData.append('image', file);
       }
 
-      const sessionID = getSessionID(); // 이 줄 추가
+      const sessionID = getSessionID();
       const response = await fetch('https://falsecam.onrender.com/generate/image', {
         method: 'POST',
         headers: {
-          'sessionID': sessionID // 이 줄 추가!
+          'sessionID': sessionID
         },
         body: formData,
       });
@@ -126,34 +134,34 @@ export default function Home() {
       const result = await response.json();
 
       if (result.success && result.image) {
-        setImageList((prev) => [{ src: result.image, type: 'image' }, ...prev]);
+        const newImageItem = { src: result.image, type: 'image', date: new Date() };
+        setImageList((prev) => [newImageItem, ...prev]);
         setCurrentIndex(0);
         console.log('이미지 생성 성공!', result.image);
-        // [여기] 비디오 생성 API 호출
-        try {
-          const videoRes = await fetch('https://falsecam.onrender.com/generate/video', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json','sessionID': sessionID // 이것도 추가!
-  },
-            body: JSON.stringify({
-              prompt: text,
-              image_url: result.image,
-              style,
-              age,
-              gender,
-            }),
-          });
-          const videoResult = await videoRes.json();
-          if (videoResult.success) {
-            console.log('비디오 생성 성공!', videoResult);
-            // 필요시 setState 등 후처리
-          } else {
-            console.error('비디오 생성 실패:', videoResult.error);
-          }
-        } catch (err) {
-          console.error('비디오 생성 API 호출 오류:', err);
-        }
 
+        const videoRes = await fetch('https://falsecam.onrender.com/generate/video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'sessionID': sessionID },
+          body: JSON.stringify({
+            prompt: text,
+            image_url: result.image,
+            style,
+            age,
+            gender,
+          }),
+        });
+        const videoResult = await videoRes.json();
+
+        if (videoResult.success && videoResult.video_url) {
+          console.log('비디오 생성 성공!', videoResult.video_url);
+          setImageList(prevList => {
+            const newList = [...prevList];
+            newList[0] = { ...newList[0], type: 'video', video_url: videoResult.video_url };
+            return newList;
+          });
+        } else {
+          console.error('비디오 생성 실패:', videoResult.error);
+        }
       } else {
         console.error('이미지 생성 실패:', result.error);
       }
@@ -169,6 +177,7 @@ export default function Home() {
     }
   };
 
+
   return (
     <div
       className="w-full min-h-screen bg-cover bg-center bg-fixed"
@@ -180,28 +189,24 @@ export default function Home() {
 
 
       <div className="relative z-10 text-white font-sans">
-  <div className="absolute top-0 left-16 flex items-center px-6 py-2 rounded-2xl z-50">
-    <img
-      src="/logo.png"
-      alt="로고"
-      className="h-20 w-20 mr-0"
-      style={{
-        filter: "brightness(99%) saturate(80%) blur(0.5px)",
-        transition: "filter 0.3s ease-in-out",
-        background: "transparent"
-      }}
-    />
-    <span
-      className="text-2xl font-bold tracking-tight"
-      style={{ letterSpacing: "0.03em" }}
-    >
-      FalseCam
-    </span>
-  </div>
-
-
-
-
+        <div className="absolute top-0 left-16 flex items-center px-6 py-2 rounded-2xl z-50">
+          <img
+            src="/logo.png"
+            alt="로고"
+            className="h-20 w-20 mr-0"
+            style={{
+              filter: "brightness(99%) saturate(80%) blur(0.5px)",
+              transition: "filter 0.3s ease-in-out",
+              background: "transparent"
+            }}
+          />
+          <span
+            className="text-2xl font-bold tracking-tight"
+            style={{ letterSpacing: "0.03em" }}
+          >
+            FalseCam
+          </span>
+        </div>
 
 
         <MainTitle />
@@ -243,12 +248,10 @@ export default function Home() {
         openInstagram={openInstagram}
       />
 
-      {/* "소환" 버튼 클릭 시 나타나는 로딩 화면 */}
       {isSummoning && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 text-white">
           <p className="mb-4 text-lg">당신의 하루를 마법처럼 소환 중이에요...</p>
 
-          {/* 캐릭터 + 게이지 */}
           <div className="relative w-64 h-12 mb-2">
             <img
               src="/rabbit.jpg"
