@@ -6,8 +6,10 @@ import re
 from io import BytesIO
 from random import choice
 from typing import Optional
+from pydantic import BaseModel
+import time
 
-import fal_client as fal
+import fal_client
 import openai
 import requests
 from dotenv import load_dotenv
@@ -31,6 +33,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY
 BFL_ENDPOINT = "fal-ai/flux-pro/kontext"
+VIDEO_MODEL_NAME = "kling-video/v2.1/standard/image-to-video"
 
 STYLE_PROMPT = {
     "realistic": "semi_realistic, hyper-detailed, sharp focus, DSLR photo, documentary style, 100mm lens, soft natural lighting, perfect skin, editorial photo, 4k, k-fasion, designer clothes, stylisth",
@@ -113,35 +116,19 @@ async def generate_image(
         )
 
     translated_prompt = await get_translated_text(text)
-    style_prompt = (
-        STYLE_PROMPT[style]
-        if style and style in STYLE_PROMPT
-        else choice(list(STYLE_PROMPT.values()))
-    )
-    gender_en = (
-        GENDER_KO_TO_EN[gender]
-        if gender and gender in GENDER_KO_TO_EN
-        else choice(list(GENDER_KO_TO_EN.values()))
-    )
-    final_age = (
-        AGE_MAP[age]
-        if age and age in AGE_MAP
-        else choice(list(AGE_MAP.values()))
-    )
+    style_prompt = STYLE_PROMPT.get(style, choice(list(STYLE_PROMPT.values())))
+    gender_en = GENDER_KO_TO_EN.get(gender, choice(list(GENDER_KO_TO_EN.values())))
+    final_age = AGE_MAP.get(age, choice(list(AGE_MAP.values())))
     ethnicity_keyword = "Korean" if contains_korean(text) else ""
     paparazzi_prompt = (
         "not looking at the camera, full-body shot, candid,"
         "like a paparazzi photo, natural moment"
     )
 
+    # --- case 1: dot 스타일 + 얼굴 삽입 없음
     if style == "dot" and not image:
         subject_prompt = f"A {final_age} {ethnicity_keyword} {gender_en}"
-        style_prompt = STYLE_PROMPT["dot"]
-        final_prompt_parts = [
-            translated_prompt,
-            style_prompt,
-            subject_prompt,
-        ]
+        final_prompt_parts = [translated_prompt, style_prompt, subject_prompt]
         composed_prompt = ". ".join(filter(None, final_prompt_parts))
         payload = {
             "prompt": composed_prompt,
@@ -154,6 +141,28 @@ async def generate_image(
                 "turned away, face covered, shadow on face"
             ),
         }
+        try:
+            logging.info("🟡 dot 스타일 - 랜덤 이미지 생성 시작")
+            img_result = await asyncio.to_thread(
+                fal_client.run,
+                BFL_ENDPOINT,
+                arguments=payload
+            )
+            final_image_url = img_result["images"][0]["url"]
+            image_response = requests.get(final_image_url, timeout=15)
+            image_response.raise_for_status()
+            encoded_image = base64.b64encode(image_response.content).decode("utf-8")
+            data_uri = f"data:image/png;base64,{encoded_image}"
+            logging.info("✅ dot 스타일 - 랜덤 이미지 생성 성공")
+            return JSONResponse(content={"success": True, "image": data_uri})
+        except Exception as e:
+            logging.exception("❌ dot 스타일 이미지 생성 실패")
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": str(e)}
+            )
+
+    # --- case 2: 얼굴 삽입한 경우 (참조 이미지 사용)
     elif image:
         subject_prompt = f"photo of a {final_age} {ethnicity_keyword} {gender_en}"
         face_guidance_prompt = (
@@ -171,8 +180,8 @@ async def generate_image(
         encoded_image = base64.b64encode(image_bytes).decode("utf-8")
         payload = {
             "prompt": composed_prompt,
-            "guidance_scale": 4,
-            "image_guidance_scale": 0.3,
+            "guidance_scale": 3,
+            "image_guidance_scale": 0.1,
             "num_images": 1,
             "output_format": "png",
             "aspect_ratio": "3:4",
@@ -182,6 +191,28 @@ async def generate_image(
                 "turned away, face covered, shadow on face"
             ),
         }
+        try:
+            logging.info("🟢 얼굴 삽입 - 이미지 생성 시작")
+            img_result = await asyncio.to_thread(
+                fal_client.run,
+                BFL_ENDPOINT,
+                arguments=payload
+            )
+            final_image_url = img_result["images"][0]["url"]
+            image_response = requests.get(final_image_url, timeout=15)
+            image_response.raise_for_status()
+            encoded_image = base64.b64encode(image_response.content).decode("utf-8")
+            data_uri = f"data:image/png;base64,{encoded_image}"
+            logging.info("✅ 얼굴 삽입 - 이미지 생성 성공")
+            return JSONResponse(content={"success": True, "image": data_uri})
+        except Exception as e:
+            logging.exception("❌ 얼굴 삽입 이미지 생성 실패")
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": str(e)}
+            )
+
+    # --- case 3: 얼굴 삽입 없음, dot 스타일도 아님 → 랜덤 realistic 생성
     else:
         subject_prompt = f"A {final_age} {ethnicity_keyword} {gender_en}"
         final_prompt_parts = [
@@ -193,7 +224,7 @@ async def generate_image(
         composed_prompt = ". ".join(filter(None, final_prompt_parts))
         payload = {
             "prompt": composed_prompt,
-            "guidance_scale": 8,
+            "guidance_scale": 3,
             "num_images": 1,
             "output_format": "png",
             "aspect_ratio": "3:4",
@@ -202,28 +233,27 @@ async def generate_image(
                 "turned away, face covered, shadow on face"
             ),
         }
+        try:
+            logging.info("🟠 일반 랜덤 이미지 생성 시작")
+            img_result = await asyncio.to_thread(
+                fal_client.run,
+                BFL_ENDPOINT,
+                arguments=payload
+            )
+            final_image_url = img_result["images"][0]["url"]
+            image_response = requests.get(final_image_url, timeout=15)
+            image_response.raise_for_status()
+            encoded_image = base64.b64encode(image_response.content).decode("utf-8")
+            data_uri = f"data:image/png;base64,{encoded_image}"
+            logging.info("✅ 일반 랜덤 이미지 생성 성공")
+            return JSONResponse(content={"success": True, "image": data_uri})
+        except Exception as e:
+            logging.exception("❌ 일반 랜덤 이미지 생성 실패")
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": str(e)}
+            )
 
-    logging.info(f"🐾 최종 프롬프트: {composed_prompt}")
-
-    try:
-        img_result = await asyncio.to_thread(
-            fal.run,
-            BFL_ENDPOINT,
-            arguments=payload
-        )
-        final_image_url = img_result["images"][0]["url"]
-        image_response = requests.get(final_image_url, timeout=15)
-        image_response.raise_for_status()
-        encoded_image = base64.b64encode(image_response.content).decode("utf-8")
-        output_format = payload.get("output_format", "png")
-        data_uri = f"data:image/{output_format};base64,{encoded_image}"
-        return JSONResponse(content={"success": True, "image": data_uri})
-    except Exception as e:
-        logging.error(f"❌ 처리 중 예외 발생: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": str(e)}
-        )
 
 
 @router.get("/generated_image_proxy")
@@ -241,4 +271,91 @@ def proxy_image(url: str) -> StreamingResponse:
         return JSONResponse(
             status_code=404,
             content={"success": False, "error": "Image not found."}
+        )
+
+
+class VideoRequest(BaseModel):
+    image_url: str
+
+@router.post("/generate/video")
+async def generate_video_from_image(req: VideoRequest):
+    FIXED_VIDEO_PROMPT = "A 5-second video with a slow camera pan around the subject, cinematic, smooth movement."
+    TIMEOUT_SECONDS = 30
+    POLL_INTERVAL = 2
+
+    try:
+        if not req.image_url.startswith("data:image"):
+            raise ValueError("data:image 형식의 base64만 지원합니다.")
+
+        _, encoded = req.image_url.split(",", 1)
+        logging.info("🎞 base64 영상 생성 요청 시작")
+
+        result = await asyncio.to_thread(
+            fal_client.run,
+            f"fal-ai/{VIDEO_MODEL_NAME}",
+            arguments={
+                "prompt": FIXED_VIDEO_PROMPT,
+                "image_base64": encoded,
+                "duration": 5
+            }
+        )
+
+        request_id = result.get("request_id")
+        if not request_id:
+            logging.error(f"❌ Fal 응답에 request_id 없음: {result}")
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": "Fal 응답에 request_id 없음"}
+            )
+
+        attempt = 0
+        start_time = time.monotonic()
+        while time.monotonic() - start_time < TIMEOUT_SECONDS:
+            attempt += 1
+            status = await asyncio.to_thread(fal_client.get_request, request_id)
+
+            # 1. API가 불안정하여 None을 반환하는 경우를 방어
+            if not status:
+                logging.warning(f"⚠️ Fal 상태 응답이 비어있음 (시도: #{attempt})")
+                await asyncio.sleep(POLL_INTERVAL)
+                continue
+
+            state = status.get("status")
+
+            # 2. DEBUG 레벨로 현재 상태를 상세히 로깅하여 추적 용이성 확보
+            logging.debug(f"🔁 영상 상태 체크 #{attempt}: {state}")
+
+            if state == "succeeded":
+                video_url = status.get("video", {}).get("url")
+                if video_url:
+                    logging.info(f"✅ 영상 생성 완료 (url: {video_url})")
+                    return JSONResponse(content={"success": True, "video_url": video_url})
+                else:
+                    logging.error(f"❌ 응답에 video_url 없음: {status}")
+                    return JSONResponse(
+                        status_code=500,
+                        content={"success": False, "error": "Video URL not found in response."}
+                    )
+            elif state == "failed":
+                logging.error(f"❌ Fal 응답: 영상 생성 실패: {status}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"success": False, "error": "Video generation failed."}
+                )
+
+            await asyncio.sleep(POLL_INTERVAL)
+
+        # while 루프가 정상적으로 끝나면 타임아웃
+        logging.error(f"⏰ 영상 생성 요청 타임아웃 (Request ID: {request_id})")
+        return JSONResponse(
+            status_code=504,
+            content={"success": False, "error": "Video generation timed out."}
+        )
+
+    except Exception as e:
+        # 3. 스택 트레이스 전체를 기록하여 예상치 못한 에러의 원인 분석 용이
+        logging.exception(f"❌ 영상 생성 중 예기치 않은 예외 발생: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "An unexpected error occurred during video generation."}
         )
