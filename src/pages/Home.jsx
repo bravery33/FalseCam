@@ -171,6 +171,15 @@ export default function Home() {
       <div className="fixed inset-0 w-full h-full z-0 pointer-events-none bg-[#0f1028]/60 backdrop-blur-sm" />
 
       <div className="relative z-10 text-white font-sans">
+        <div className="absolute top-5 left-16 flex items-center z-50">
+          <img src="/logo.png" alt="로고" className="h-12 w-12 mr-0"
+            style={{
+              filter: "drop-shadow(0 0 18px #fff) drop-shadow(0 0 48px #fff)",
+              background: "transparent"
+            }}
+          />
+          <span className="text-2xl font-bold tracking-tight" style={{ letterSpacing: '0.03em' }}>FalseCam</span>
+        </div>
         <MainTitle />
         <DailyJournalInput text={text} setText={setText} />
 
