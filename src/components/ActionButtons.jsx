@@ -1,23 +1,19 @@
+// ActionButtons.jsx
+
 export default function ActionButtons({ handleDownload, openInstagram }) {
+  // div에서 absolute, bottom, right, z-index 클래스 제거
   return (
-    <div className="absolute bottom-4 right-4 flex gap-2 z-30">
+    <div className="flex gap-2"> 
       <button
         onClick={handleDownload}
-        className="flex items-center justify-center p-2 bg-white text-black rounded-full shadow hover:bg-gray-100"
+        className="w-11 h-11 p-2 bg-white rounded-full shadow-md hover:scale-105 transition download-icon-btn"
         title="Download"
-      >
-        <img src="/download-icon.jpg" alt="Download" className="w-7 h-7" />
-      </button>
-
+      />
       <button
         onClick={openInstagram}
-        className="flex items-center justify-center p-2 bg-white rounded-full shadow-md hover:scale-105 transition"
+        className="w-11 h-11 p-2 bg-white rounded-full shadow-md hover:scale-105 transition instagram-icon-btn"
         title="Open Instagram"
-      >
-        <img src="/instagram-icon.png" alt="Instagram" className="w-7 h-7" />
-      </button>
-
-
+      />
     </div>
   );
 }

@@ -16,4 +16,16 @@
     border-radius: 4px;
   }
   
-  
+.download-icon-btn {
+  background-image: url('/download-icon.jpg');
+  background-size: 65%; /* 아이콘 크기 조정 */
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.instagram-icon-btn {
+  background-image: url('/instagram-icon.png');
+  background-size: 65%; /* 아이콘 크기 조정 */
+  background-repeat: no-repeat;
+  background-position: center;
+}  

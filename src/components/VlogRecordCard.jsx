@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 
 export default function VlogRecordCard({ imageList, currentIndex, setCurrentIndex, openPreview }) {
   const isEmpty = imageList.length === 0;
-  const currentItem = imageList[currentIndex]; // 현재 아이템 정보 가져오기
+  const currentItem = imageList[currentIndex];
 
   const indicatorRef = useRef(null);
 
@@ -31,7 +31,6 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
       <h2 className="text-center text-lg font-semibold mb-6">내 브이로그 기록</h2>
 
       <div className="relative w-full flex justify-center items-center">
-        {/* 아래 div의 h-[180px]를 h-48로 변경하여 높이를 늘립니다. */}
         <div className="w-full h-48 overflow-hidden rounded-lg bg-transparent flex items-center justify-center">
           {isEmpty ? (
             <div className="text-gray-400 text-center w-full">브이로그가 아직 없습니다.</div>
@@ -42,15 +41,34 @@ export default function VlogRecordCard({ imageList, currentIndex, setCurrentInde
                 alt={`브이로그 썸네일 ${currentIndex + 1}`}
                 className="rounded-lg w-full h-full object-contain cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
               />
-              {/* 현재 아이템이 비디오 타입이면 재생 아이콘 표시 */}
+\\
               {currentItem.type === 'video' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
-                  <span className="text-white text-5xl drop-shadow-lg">▶</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-auto cursor-pointer">
+                  <span className="text-red-500 text-2xl drop-shadow-lg hover:text-red-700 hover:scale-110">▶</span>
                 </div>
               )}
             </div>
           )}
         </div>
+        {!isEmpty && currentIndex !== 0 && (
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length)}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
+            aria-label="이전 이미지"
+          >
+            ◀
+          </button>
+        )}
+
+        {!isEmpty && currentIndex !== imageList.length - 1 && (
+          <button
+            onClick={() => setCurrentIndex((prev) => (prev + 1) % imageList.length)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 text-white text-3xl hover:text-primary transition"
+            aria-label="다음 이미지"
+          >
+            ▶
+          </button>
+        )}
       </div>
 
       {!isEmpty && (

@@ -32,6 +32,7 @@ if OPENAI_API_KEY:
     openai.api_key = OPENAI_API_KEY
 
 FAL_IMAGE_MODEL_ENDPOINT = "fal-ai/flux-pro/kontext"
+FAL_TEXT_TO_IMAGE_MODEL_ENDPOINT = "fal-ai/flux-kontext-lora/text-to-image"
 FAL_VIDEO_MODEL_ENDPOINT = "fal-ai/kling-video/v2.1/standard/image-to-video" 
 
 
@@ -72,13 +73,16 @@ async def get_translated_text(text: str) -> str:
         {
             "role": "system",
             "content": (
-                "You are an AI artist. Given the user's input, imagine the scene and translate it into a vivid "
+                "You are an AI artist. "
+                "Your primary goal is to shatter the mundane reality of the user's input and "
+                "radically reimagine it as a deeply symbolic, metaphorical, and visually arresting masterpiece. "
+                "Given the user's input, imagine the scene and translate it into a vivid "
                 "English prompt. The prompt must always include, in detail, a specific camera angle and composition "
                 "(e.g., low-angle, side view, from behind), the background, environment, what the person is doing, "
                 "surrounding objects, the mood, and the time, based on the user's input. Never, under any circumstances, "
                 "describe the person's face or physical appearance. Write as if you are describing what you saw firsthand, "
                 "vividly, and strictly from a third-person point of view."
-            ),
+            ),            
         },
         {"role": "user", "content": text},
     ]
@@ -125,8 +129,13 @@ async def generate_image(
         image_bytes = await image.read()
         encoded_image = base64.b64encode(image_bytes).decode("utf-8")
         payload = {
-            "prompt": composed_prompt, "guidance_scale": 4, "image_guidance_scale": 0.3, "num_images": 1,
-            "output_format": "png", "aspect_ratio": "3:4", "image_url": f"data:image/png;base64,{encoded_image}",
+            "prompt": composed_prompt, 
+            "guidance_scale": 4, 
+            "image_guidance_scale": 0.3, 
+            "num_images": 1,
+            "output_format": "png", 
+            "image_size": "portrait_4_3", 
+            "image_url": f"data:image/png;base64,{encoded_image}",
             "negative_prompt": "random face, distorted face, blurry, ugly, side view, back view, turned away, face covered, shadow on face",
         }
         
@@ -139,22 +148,26 @@ async def generate_image(
             return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
             
     else:
-        if not OPENAI_API_KEY:
-            return JSONResponse(status_code=500, content={"success": False, "error": "OpenAI API key missing."})
-        
         subject_prompt = f"A {final_age} {gender_en} person"
         final_prompt_parts = [translated_prompt, style_prompt, subject_prompt]
         composed_prompt = ". ".join(filter(None, final_prompt_parts))
         
-        logging.info(f"🐾 DALL-E 프롬프트: {composed_prompt}")
+        payload = {
+            "prompt": composed_prompt,
+            "num_images": 1,
+            "output_format": "png",
+            "image_size": "portrait_4_3",
+            "negative_prompt": "random face, distorted face, blurry, ugly, side view, back view, turned away, face covered, shadow on face",
+        }
+
+        logging.info(f"🐾 fal.ai 텍스트-이미지 프롬프트: {composed_prompt}")
         try:
-            response = await asyncio.to_thread(
-                openai.Image.create, model="dall-e-3", prompt=composed_prompt, n=1,
-                size="1024x1792", response_format="url", quality="standard"
+            img_result = await asyncio.to_thread(
+                fal.run, FAL_TEXT_TO_IMAGE_MODEL_ENDPOINT, arguments=payload
             )
-            final_image_url = response['data'][0]['url']
+            final_image_url = img_result["images"][0]["url"]
         except Exception as e:
-            logging.error(f"❌ DALL-E 처리 중 예외 발생: {e}")
+            logging.error(f"❌ fal.ai 텍스트-이미지 처리 중 예외 발생: {e}")
             return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
 
     try:

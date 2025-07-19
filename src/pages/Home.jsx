@@ -53,9 +53,18 @@ export default function Home() {
 
 
   const handleDownload = () => {
+    const currentItem = imageList[currentIndex];
+
     const link = document.createElement('a');
-    link.href = imageList[currentIndex].src;
-    link.download = `vlog_${currentIndex + 1}.png`;
+
+    if (currentItem.type === 'video') {
+      link.href = currentItem.video_url;
+      link.download = `vlog_video_${currentIndex + 1}.mp4`;
+    } else {
+      link.href = currentItem.src;
+      link.download = `vlog_image_${currentIndex + 1}.png`;
+    }
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -90,7 +99,6 @@ export default function Home() {
 
 
   const handleGenerate = async () => {
-    // 텍스트 입력 유효성 검사
     if (!text.trim()) {
       setAlertMessage("일기 내용을 먼저 작성해주세요!");
       setAlertSubMessage("오늘 있었던 일을 간단하게 들려주세요.");
@@ -107,9 +115,9 @@ export default function Home() {
           clearInterval(interval);
           return prev;
         }
-        return prev + 2;
+        return prev + 1;
       });
-    }, 200);
+    }, 1200);
 
     try {
       const formData = new FormData();
@@ -154,11 +162,13 @@ export default function Home() {
 
         if (videoResult.success && videoResult.video_url) {
           console.log('비디오 생성 성공!', videoResult.video_url);
-          setImageList(prevList => {
-            const newList = [...prevList];
-            newList[0] = { ...newList[0], type: 'video', video_url: videoResult.video_url };
-            return newList;
-          });
+          const newVideoItem = {
+            src: result.image,
+            type: 'video',
+            video_url: videoResult.video_url,
+            date: new Date()
+          };
+          setImageList(prevList => [newVideoItem, ...prevList]);
         } else {
           console.error('비디오 생성 실패:', videoResult.error);
         }
@@ -189,11 +199,11 @@ export default function Home() {
 
 
       <div className="relative z-10 text-white font-sans">
-        <div className="absolute top-0 left-16 flex items-center px-6 py-2 rounded-2xl z-50">
+        <div className="absolute top-0 left-4 md:left-16 flex items-center px-6 py-2 rounded-2xl z-50">
           <img
             src="/logo.png"
             alt="로고"
-            className="h-20 w-20 mr-0"
+            className="h-[3rem] w-[3rem] md:h-[5rem] md:w-[5rem] mr-0"
             style={{
               filter: "brightness(99%) saturate(80%) blur(0.5px)",
               transition: "filter 0.3s ease-in-out",
@@ -201,7 +211,7 @@ export default function Home() {
             }}
           />
           <span
-            className="text-2xl font-bold tracking-tight"
+            className="text-[1.25rem] md:text-[1.5rem] font-bold tracking-tight"
             style={{ letterSpacing: "0.03em" }}
           >
             FalseCam
@@ -250,7 +260,8 @@ export default function Home() {
 
       {isSummoning && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 text-white">
-          <p className="mb-4 text-lg">당신의 하루를 마법처럼 소환 중이에요...</p>
+          <p className="mb-1 text-lg">당신의 하루를 마법처럼 소환 중이에요...</p>
+          <p className="mb-10 text-sm text-gray-400">영상과 이미지를 동시에 생성중이오니 약 2분만 기다려 주세요</p>
 
           <div className="relative w-64 h-12 mb-2">
             <img
