@@ -52,22 +52,41 @@ export default function Home() {
 
 
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const currentItem = imageList[currentIndex];
-
-    const link = document.createElement('a');
+    let urlToDownload;
+    let fileName;
 
     if (currentItem.type === 'video') {
-      link.href = currentItem.video_url;
-      link.download = `vlog_video_${currentIndex + 1}.mp4`;
+      urlToDownload = currentItem.video_url;
+      fileName = `vlog_video_${currentIndex + 1}.mp4`;
     } else {
-      link.href = currentItem.src;
-      link.download = `vlog_image_${currentIndex + 1}.png`;
+      urlToDownload = currentItem.src;
+      fileName = `vlog_image_${currentIndex + 1}.png`;
     }
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const response = await fetch(urlToDownload);
+      const blob = await response.blob();
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(blobUrl);
+
+    } catch (error) {
+      console.error("Download failed:", error);
+      setAlertMessage("다운로드에 실패했어요.");
+      setAlertSubMessage("파일을 처리하는 중 문제가 발생했습니다.");
+      setShowAlert(true);
+    }
   };
 
   const openInstagram = () => {
@@ -194,9 +213,6 @@ export default function Home() {
       style={{ backgroundImage: `url('/beach.jpg')` }}
     >
       <div className="fixed inset-0 w-full h-full z-0 pointer-events-none bg-[#0f1028]/60 backdrop-blur-sm" />
-
-
-
 
       <div className="relative z-10 text-white font-sans">
         <div className="absolute top-0 left-4 md:left-16 flex items-center px-6 py-2 rounded-2xl z-50">

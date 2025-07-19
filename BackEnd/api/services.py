@@ -73,10 +73,7 @@ async def get_translated_text(text: str) -> str:
         {
             "role": "system",
             "content": (
-                "You are an AI artist. "
-                "Your primary goal is to shatter the mundane reality of the user's input and "
-                "radically reimagine it as a deeply symbolic, metaphorical, and visually arresting masterpiece. "
-                "Given the user's input, imagine the scene and translate it into a vivid "
+                "You are an AI artist. Given the user's input, imagine the scene and translate it into a vivid "
                 "English prompt. The prompt must always include, in detail, a specific camera angle and composition "
                 "(e.g., low-angle, side view, from behind), the background, environment, what the person is doing, "
                 "surrounding objects, the mood, and the time, based on the user's input. Never, under any circumstances, "
