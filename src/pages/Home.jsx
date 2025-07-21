@@ -234,11 +234,10 @@ export default function Home() {
           </span>
         </div>
 
-
         <MainTitle />
         <DailyJournalInput text={text} setText={setText} />
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-20 pb-64 items-stretch">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 px-6 mt-6 pb-20 items-stretch">
           <InfoInputCard
             style={style}
             setStyle={setStyle}
@@ -277,7 +276,8 @@ export default function Home() {
       {isSummoning && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 text-white">
           <p className="mb-1 text-lg">당신의 하루를 마법처럼 소환 중이에요...</p>
-          <p className="mb-10 text-sm text-gray-400">영상과 이미지를 동시에 생성중이오니 약 2분만 기다려 주세요</p>
+          <p className="mb-10 text-sm text-gray-400 text-center">영상과 이미지를 동시에 생성중이오니 <br />
+            약 2분만 기다려 주세요</p>
 
           <div className="relative w-64 h-12 mb-2">
             <img
