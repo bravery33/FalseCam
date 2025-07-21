@@ -48,7 +48,8 @@ export default function InfoInputCard({ style, setStyle, age, setAge, gender, se
       backgroundColor: 'rgba(30,30,30,0.9)',
       color: 'white',
       backdropFilter: 'blur(8px)',
-      zIndex: 50,
+      zIndex: 9999,        // 위로 띄우기
+      position: 'absolute' // 레이어 명확히 분리
     }),
     singleValue: (base) => ({
       ...base,
@@ -101,7 +102,7 @@ export default function InfoInputCard({ style, setStyle, age, setAge, gender, se
   };
 
   return (
-    <div className="w-full max-w-sm rounded-xl p-6
+    <div className="relative z-50 w-full max-w-sm rounded-xl p-6
       bg-[rgba(255,255,255,0.05)]
       backdrop-blur-xl
       border border-[rgba(255,255,255,0.12)]
