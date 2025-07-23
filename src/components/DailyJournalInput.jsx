@@ -24,7 +24,7 @@ export default function DailyJournalInput({ text, setText }) {
 
         <textarea
           ref={textareaRef}
-          placeholder="오늘 하루를 한 줄로 남겨볼까요?(최대100자)"
+          placeholder="빗소리를 들으며 따뜻한 커피를 한잔했던 여유로운 주말 오후(최대100자)"
           value={text}
           maxLength={100}
           onChange={(e) => setText(e.target.value)}
