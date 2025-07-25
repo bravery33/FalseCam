@@ -10,6 +10,19 @@ FalseCam은 사용자가 입력한 짧은 텍스트와 사진 한 장을 분석�
 
 <br>
 
+## 📂 프로젝트 문서 (Project Documents)
+프로젝트의 기획, 설계, 분석 과정에서 작성된 주요 산출물입니다.
+
+| 문서 종류 | 링크 |
+| :--- | :--- |
+| **기획서** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/3.%20FalseCamProject_%EA%B8%B0%ED%9A%8D%EC%84%9C0718.pdf) |
+| **업무 상세 설명서** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/1.1%20WBS%20%EA%B8%B0%EB%B0%98%20%EC%97%85%EB%AC%B4%20%EC%83%81%EC%84%B8%20%EC%84%A4%EB%AA%85%EC%84%9C%20(Task%20Description)%20(1).pdf) |
+| **테스트 계획 및 시나리오** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/7.%20%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EA%B3%84%ED%9A%8D%20%EB%B0%8F%20%EC%8B%9C%EB%82%98%EB%A6%AC%EC%98%A4.pdf) |
+| **사용자 피드백** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/10.%20FalseCamMVP%ED%94%BC%EB%93%9C%EB%B0%B1.pdf) |
+| **결 보고서** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/11.%20%EA%B2%B0%EA%B3%BC%EB%B3%B4%EA%B3%A0%EC%84%9C_Git.pdf) |
+| **회의록** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/0.%20%ED%9A%8C%EC%9D%98%EB%A1%9D_%EC%A3%BC%EC%84%9D%EC%97%B4.pdf) |
+<br>
+
 ## 🚀 주요 기능
 
 * **AI 경험 재구성 (AI Experience Reconstruction)**: "카페에서 공부했다"와 같은 단순한 일상 기록을 AI가 "네온사인이 비치는 창가에서 홀로그램 노트북으로 코딩하는 사이버펑크 개발자"처럼, 전혀 다른 장르의 '있을법한 하루'로 새롭게 창조합니다.
@@ -37,19 +50,11 @@ FalseCam은 사용자가 입력한 짧은 텍스트와 사진 한 장을 분석�
 
 FalseCam은 프론트엔드와 백엔드가 분리된 **Decoupled Architecture**를 채택하여 각 파트의 독립성과 확장성을 확보했습니다.
 
-네, 알겠습니다. 아래 텍스트 전체를 복사해서 README.md 파일에 붙여넣으시면 됩니다.
-
-Markdown
-
 # FalseCam ✨
 
 > 당신의 평범한 일상을 특별한 순간으로 재구성하는 AI 기반 추억 생성 서비스
 
 FalseCam은 사용자가 입력한 짧은 텍스트와 사진 한 장을 분석해, 세상에 없던 독창적인 AI 브이로그(이미지/영상)를 만들어주는 웹 서비스입니다. 최신 생성형 AI 기술을 활용하여, 당신의 평범했던 순간을 영화처럼, 때로는 애니메이션처럼 특별하게 재구성해 보세요. 복잡한 프롬프트 작성이나 전문 지식 없이 누구나 쉽고 재미있게 자신만의 콘텐츠를 만들 수 있습니다.
-
-<br>
-
-<img src="https://storage.googleapis.com/gemini-prod/images/image_56a285.png" width="100%">
 
 <br>
 
