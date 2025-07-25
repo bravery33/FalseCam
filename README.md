@@ -41,7 +41,7 @@ MVP 배포 후, 총 14명의 사용자를 대상으로 피드백을 수집하여
 <br>
 
 ## 💬 피드백 반영 (Feedback Reflection)
-수집된 피드백 중, 서비스 사용성에 큰 영향을 미치는 항목은 즉시 개선 작업에 반영했습니다. 대표적인 예시는 다음과 같습니다.
+피드백 중, 서비스 사용에 큰 영향을 미치는 항목은 즉시 개선 작업에 반영했습니다. 대표적인 예시는 다음과 같습니다.
 <img width="1072" height="597" alt="image" src="https://github.com/user-attachments/assets/1a4439fc-95de-4749-a0f7-f0ed45a677d0" />
 <br>
 <img width="1130" height="606" alt="image" src="https://github.com/user-attachments/assets/52738048-0cd3-47a8-90e0-13a80372852a" />
