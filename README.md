@@ -15,12 +15,12 @@ FalseCam은 사용자가 입력한 짧은 텍스트와 사진 한 장을 분석�
 
 | 문서 종류 | 링크 |
 | :--- | :--- |
-| **기획서** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/3.%20FalseCamProject_%EA%B8%B0%ED%9A%8D%EC%84%9C0718.pdf) |
-| **업무 상세 설명서** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/1.1%20WBS%20%EA%B8%B0%EB%B0%98%20%EC%97%85%EB%AC%B4%20%EC%83%81%EC%84%B8%20%EC%84%A4%EB%AA%85%EC%84%9C%20(Task%20Description)%20(1).pdf) |
-| **테스트 계획 및 시나리오** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/7.%20%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EA%B3%84%ED%9A%8D%20%EB%B0%8F%20%EC%8B%9C%EB%82%98%EB%A6%AC%EC%98%A4.pdf) |
-| **사용자 피드백** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/10.%20FalseCamMVP%ED%94%BC%EB%93%9C%EB%B0%B1.pdf) |
-| **결 보고서** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/11.%20%EA%B2%B0%EA%B3%BC%EB%B3%B4%EA%B3%A0%EC%84%9C_Git.pdf) |
-| **회의록** | [보기](https://github.com/bravery33/FalseCamReport/blob/8424876f003578910707072ec229bd0b7e5095a3/0.%20%ED%9A%8C%EC%9D%98%EB%A1%9D_%EC%A3%BC%EC%84%9D%EC%97%B4.pdf) |
+| **기획서** | [보기](https://github.com/bravery33/FalseCamReport/blob/f867333814fdea41a5bc26c8be5fc71206479716/FalseCamProject_%EA%B8%B0%ED%9A%8D%EC%84%9C.pdf) |
+| **업무 상세 설명서** | [보기](https://github.com/bravery33/FalseCamReport/blob/f867333814fdea41a5bc26c8be5fc71206479716/WBS%EA%B8%B0%EB%B0%98%EC%97%85%EB%AC%B4%EC%83%81%EC%84%B8%EC%84%A4%EB%AA%85%EC%84%9C.pdf) |
+| **테스트 계획 및 시나리오** | [보기](https://github.com/bravery33/FalseCamReport/blob/f867333814fdea41a5bc26c8be5fc71206479716/%ED%85%8C%EC%8A%A4%ED%8A%B8%20%EA%B3%84%ED%9A%8D%20%EB%B0%8F%20%EC%8B%9C%EB%82%98%EB%A6%AC%EC%98%A4.pdf) |
+| **사용자 피드백** | [보기](https://github.com/bravery33/FalseCamReport/blob/f867333814fdea41a5bc26c8be5fc71206479716/FalseCamProject_%ED%94%BC%EB%93%9C%EB%B0%B1.pdf) |
+| **결과 보고서** | [보기](https://github.com/bravery33/FalseCamReport/blob/f867333814fdea41a5bc26c8be5fc71206479716/FalseCamProject_%ED%94%BC%EB%93%9C%EB%B0%B1.pdf) |
+| **회의록** | [보기](https://github.com/bravery33/FalseCamReport/blob/f867333814fdea41a5bc26c8be5fc71206479716/%ED%9A%8C%EC%9D%98%EB%A1%9D.pdf) |
 <br>
 
 ## 🚀 주요 기능
@@ -28,6 +28,7 @@ FalseCam은 사용자가 입력한 짧은 텍스트와 사진 한 장을 분석�
 * **AI 경험 재구성 (AI Experience Reconstruction)**: "카페에서 공부했다"와 같은 단순한 일상 기록을 AI가 "네온사인이 비치는 창가에서 홀로그램 노트북으로 코딩하는 사이버펑크 개발자"처럼, 전혀 다른 장르의 '있을법한 하루'로 새롭게 창조합니다.
 * **자동 프롬프트 생성 (Automatic Prompt Generation)**: 복잡한 영어 프롬프트가 필요 없습니다. 사용자가 평범한 한글 문장을 입력하면, AI가 자동으로 장면, 구도, 분위기를 고려한 상세한 영어 프롬프트로 변환하여 이미지 생성 품질을 극대화합니다.
 * **다양한 스타일 선택 (Various Style Options)**: `실사`, `2D 애니메이션`, `3D 애니메이션`, `사이버펑크`, `도트` 등 원하는 스타일을 직접 선택하여 결과물을 개인화할 수 있습니다.
+* **이미지 to 이미지 변환 (Image-to-Image Conversion)**: 사용자가 자신의 사진을 업로드하면, AI가 얼굴의 특징을 참고하여 실사, 애니메이션 등 원하는 스타일의 새로운 이미지로 재창조합니다.
 * **이미지 to 비디오 변환 (Image-to-Video Conversion)**: AI가 생성한 이미지를 기반으로, 그 장면에 어울리는 자연스러운 움직임이 더해진 짧은 비디오 클립을 자동으로 생성합니다.
 * **회원가입 없는 간편함 (Simplicity without Sign-up)**: 별도의 회원가입 절차 없이, 익명 세션(Session) 기반으로 즉시 서비스를 이용하고 연속적인 작업 흐름을 지원하여 사용자 편의성을 높였습니다.
 
